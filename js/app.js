@@ -142,9 +142,54 @@
     ]);
   }
 
+  // Lời chào dựng như một biển số nhà men xanh: "tên miền là địa chỉ của shop"
+  var welcomeTyped = false;
+  function plateNode(res) {
+    var host = el('span', { class: 'host' });
+    var tld = el('span', { class: 'host', text: '.vn' });
+    var caret = el('span', { class: 'caret', 'aria-hidden': 'true' });
+    var address = el('span', { class: 'address', 'aria-label': 'Ví dụ địa chỉ: https://tenshop.vn' }, [
+      el('span', { html: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>' }),
+      el('span', { class: 'url' }, [el('span', { class: 'scheme', text: 'https://' }), host, caret, tld])
+    ]);
+    var word = 'tenshop';
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (welcomeTyped || reduce) { host.textContent = word; caret.remove(); }
+    else { // gõ tên miền một lần khi mở trang — chuyển động duy nhất của trang
+      welcomeTyped = true;
+      var i = 0;
+      (function step() {
+        if (i > word.length) { setTimeout(function () { caret.remove(); }, 1200); return; }
+        host.textContent = word.slice(0, i++);
+        setTimeout(step, i === 1 ? 500 : 90);
+      })();
+    }
+    var paras = res.paragraphs || [];
+    return el('div', { class: 'plate' }, [
+      el('h2', { class: 'plate-title', text: 'Hỏi về tên miền và hosting, có câu trả lời ngay, cả lúc nửa đêm.' }),
+      el('p', { html: md('Mình là **' + BRAND.botName + '**. ' + (paras[paras.length - 1] || '')) }),
+      address
+    ]);
+  }
+
   function addBot(res, at) {
     at = at || timeNow();
     var bubble = el('div', { class: 'bubble' });
+    if (res.type === 'welcome') {
+      bubble.appendChild(plateNode(res));
+      var wbox = el('div', { class: 'suggest' }, [el('p', { class: 'suggest-label', text: 'Bắt đầu bằng một câu hỏi thường gặp:' })]);
+      var wrow = el('div', { class: 'chips' });
+      (res.suggestions || []).forEach(function (s) { wrow.appendChild(chip(s)); });
+      wrow.appendChild(el('button', { type: 'button', class: 'chip chip-ghost', html: ICONS.list + '<span>Xem 10 câu hỏi</span>', onclick: function () { send('Xem 10 câu hỏi'); } }));
+      wrow.appendChild(el('button', { type: 'button', class: 'chip chip-ghost chip-about', html: ICONS.info + '<span>Giới thiệu bản demo</span>', onclick: function () { openAbout(); } }));
+      wbox.appendChild(wrow);
+      bubble.appendChild(wbox);
+      var wmsg = el('div', { class: 'msg bot welcome', 'data-type': 'welcome' }, [bubble]);
+      dom.log.appendChild(wmsg);
+      history.push({ r: 'b', res: res, at: at });
+      if (dom.log.children.length === 1) dom.log.scrollTop = 0; else scrollToMessage(wmsg);
+      return wmsg;
+    }
     if (res.receipt) bubble.appendChild(receiptNode(res.receipt));
     if (res.lead) bubble.appendChild(el('p', { class: 'lead', html: md(res.lead) }));
     var paras = res.paragraphs || [];
@@ -165,7 +210,7 @@
 
     var meta = el('div', { class: 'msg-meta' });
     if (res.type === 'answer') {
-      meta.appendChild(el('span', { class: 'tag tag-src', text: 'Nguồn: FAQ ' + pad2(res.faqNo) + ' · ' + res.category }));
+      meta.appendChild(el('span', { class: 'tag tag-src', text: 'Nguồn: FAQ ' + pad2(res.faqNo) + ' (' + res.category + ')' }));
       meta.appendChild(el('span', { class: 'tag tag-ai', text: 'AI mô phỏng' }));
     } else if (res.type === 'fallback') {
       meta.appendChild(el('span', { class: 'tag tag-warn', text: 'Ngoài bộ kiến thức' }));
@@ -378,7 +423,7 @@
       var short = B.formatShortDate(d);
       var label = i === 0 ? 'Hôm nay (' + short + ')' : i === 1 ? 'Ngày mai (' + short + ')' : B.formatDate(d).replace(/\/\d{4}$/, '');
       var reason = !B.isOpenDay(d) ? 'nghỉ' : B.getSlots(d, list, now).some(function (s) { return s.available; }) ? '' : (i === 0 ? 'hết giờ' : 'kín lịch');
-      dom.bkDate.appendChild(el('option', { value: d, text: label + (reason ? ' · ' + reason : ''), disabled: !!reason }));
+      dom.bkDate.appendChild(el('option', { value: d, text: label + (reason ? ' (' + reason + ')' : ''), disabled: !!reason }));
     }
   }
 
@@ -402,12 +447,12 @@
     var free = 0;
     var slots = B.getSlots(date, list, now);
     slots.forEach(function (s) {
-      var label = s.time + (s.reason === 'past' ? ' · đã qua' : s.reason === 'booked' ? ' · đã có lịch' : '');
+      var label = s.time + (s.reason === 'past' ? ' (đã qua)' : s.reason === 'booked' ? ' (đã có lịch)' : '');
       dom.bkTime.appendChild(el('option', { value: s.time, text: label, disabled: !s.available }));
       if (s.available) free++;
     });
     if (prev && slots.some(function (s) { return s.time === prev && s.available; })) dom.bkTime.value = prev;
-    dom.slotHint.textContent = B.formatDate(date) + ' · còn ' + free + '/' + slots.length + ' khung giờ trống (giờ Việt Nam).';
+    dom.slotHint.textContent = B.formatDate(date) + ': còn ' + free + '/' + slots.length + ' khung giờ trống (giờ Việt Nam).';
   }
 
   function openBooking(opts) {
@@ -489,9 +534,9 @@
     list.forEach(function (r) {
       var closed = r.status !== 'pending';
       dom.mineList.appendChild(el('li', { class: 'mine-item' + (closed ? ' closed' : ''), 'data-id': r.id }, [
-        el('span', { class: 'mine-when', text: r.time + ' · ' + B.formatDate(r.date) }),
+        el('span', { class: 'mine-when', text: r.time + ', ' + B.formatDate(r.date) }),
         el('span', { class: 'status ' + r.status, text: B.STATUS_LABEL[r.status] }),
-        el('p', { class: 'mine-meta', text: 'Mã #' + B.codeOf(r) + ' · ' + B.maskPhone(r.phone) + (r.note ? ' · “' + r.note + '”' : '') }),
+        el('p', { class: 'mine-meta' }, [el('span', { text: 'Mã #' + B.codeOf(r) }), el('span', { text: B.maskPhone(r.phone) }), r.note ? el('span', { text: '“' + r.note + '”' }) : null]),
         r.status === 'pending'
           ? el('div', { class: 'mine-actions' }, [el('button', { type: 'button', class: 'btn danger-ghost small', 'data-act': 'cancel', 'data-id': r.id, text: 'Hủy lịch hẹn' })])
           : null
@@ -556,7 +601,11 @@
       ]),
       el('div', { class: 'appt-what' }, [
         r.note ? el('p', { class: 'appt-note', text: '“' + r.note + '”' }) : el('p', { class: 'appt-note muted', text: 'Không ghi nội dung' }),
-        el('p', { class: 'appt-meta', text: (B.SOURCE_LABEL[r.source] || 'Không rõ nguồn') + ' · đặt lúc ' + (B.formatISO(r.createdAt) || '—') + ' · #' + B.codeOf(r) })
+        el('p', { class: 'appt-meta' }, [
+          el('span', { text: B.SOURCE_LABEL[r.source] || 'Không rõ nguồn' }),
+          el('span', { text: 'Đặt lúc ' + (B.formatISO(r.createdAt) || '—') }),
+          el('span', { text: 'Mã #' + B.codeOf(r) })
+        ])
       ]),
       el('div', { class: 'appt-state' }, [el('span', { class: 'status ' + r.status, text: B.STATUS_LABEL[r.status] })]),
       el('div', { class: 'appt-actions' }, actions)
@@ -689,9 +738,9 @@
       if (a.getAttribute('data-route') === view) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    document.title = (view === 'admin' ? 'Quản trị lịch hẹn' : 'Chatbot tư vấn') + ' · ' + BRAND.name + ' — Đề 4 (bản demo vòng loại)';
+    document.title = (view === 'admin' ? 'Quản trị lịch hẹn ' : 'Chatbot tư vấn ') + BRAND.name + ' — Đề 4 (bản demo vòng loại)';
     if (view === 'admin') renderAdmin();
-    else scrollToMessage(null);
+    else if (dom.log.children.length > 1) scrollToMessage(null); // chỉ có lời chào → giữ ở đầu để thấy trọn biển số
   }
 
   /* ---------------- Thông báo nhanh ---------------- */
@@ -801,7 +850,7 @@
         resetChat();
         dom.cursor.style.transform = 'translate(' + Math.round(window.innerWidth / 2) + 'px,' + Math.round(window.innerHeight * 0.62) + 'px)';
         dom.cursor.hidden = false;
-        caption('Demo', 'Đề 4 · Chatbot FAQ & đặt lịch tư vấn — thao tác tự động trên giao diện thật');
+        caption('Demo', 'Đề 4: Chatbot FAQ & đặt lịch tư vấn, thao tác tự động trên giao diện thật');
         await wait(3000);
 
         caption('1/5', 'Khung chat trả lời câu hỏi thường gặp từ bộ kiến thức có sẵn (10 câu)');
@@ -877,7 +926,7 @@
         await click(dom.cOk);
         await waitFor(function () { return !dom.cDialog.open; });
         placeOverlays();
-        caption('Xong', 'Hoàn tất 5/5 tính năng · Bản demo vòng loại - Dữ liệu mô phỏng AI');
+        caption('Xong', 'Hoàn tất 5/5 tính năng. Bản demo vòng loại - Dữ liệu mô phỏng AI');
         await wait(4200);
         return { ok: true, ms: Date.now() - t0 };
       } catch (err) {

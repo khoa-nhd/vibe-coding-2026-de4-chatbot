@@ -17,7 +17,7 @@
     name: 'VibeHost',
     botName: 'Trợ lý VibeHost',
     tagline: 'Tên miền & hosting cho shop nhỏ',
-    hoursText: 'Thứ 2 – Thứ 7 · 08:00–11:30 và 13:30–17:00 (giờ Việt Nam, GMT+7). Chủ nhật nghỉ.'
+    hoursText: 'Thứ 2 đến Thứ 7, 08:00–11:30 và 13:30–17:00 (giờ Việt Nam, GMT+7). Chủ nhật nghỉ.'
   };
 
   VC.FAQ = [
@@ -157,9 +157,9 @@
           'bắt đầu từ gói Khởi Nghiệp rồi nâng cấp sau khi đơn hàng tăng.'
       ],
       points: [
-        'Khởi Nghiệp – 39.000đ/tháng: 2 GB SSD · 50 GB băng thông · 1 website · 3 email.',
-        'Kinh Doanh – 79.000đ/tháng: 6 GB SSD NVMe · 200 GB băng thông · 3 website · 10 email.',
-        'Doanh Nghiệp – 159.000đ/tháng: 20 GB SSD NVMe · băng thông không giới hạn (sử dụng hợp lý) · 10 website · 30 email.',
+        'Khởi Nghiệp – 39.000đ/tháng: 2 GB SSD, 50 GB băng thông, 1 website, 3 email.',
+        'Kinh Doanh – 79.000đ/tháng: 6 GB SSD NVMe, 200 GB băng thông, 3 website, 10 email.',
+        'Doanh Nghiệp – 159.000đ/tháng: 20 GB SSD NVMe, băng thông không giới hạn (sử dụng hợp lý), 10 website, 30 email.',
         'Giá mẫu, thanh toán theo năm, chưa gồm VAT.'
       ],
       cta: true,
@@ -275,7 +275,7 @@
           'bản ghi MX sẽ được cấu hình tự động.'
       ],
       points: [
-        'Số hộp thư (mẫu): Khởi Nghiệp 3 · Kinh Doanh 10 · Doanh Nghiệp 30.',
+        'Số hộp thư (mẫu): Khởi Nghiệp 3, Kinh Doanh 10, Doanh Nghiệp 30.',
         'Dùng qua webmail, Outlook hoặc ứng dụng email trên điện thoại.',
         'Cần bản ghi MX đúng để gửi/nhận thư.'
       ],
@@ -312,7 +312,7 @@
       ],
       points: [
         'Khởi Nghiệp: sao lưu hằng tuần, giữ 4 bản.',
-        'Kinh Doanh: hằng ngày, giữ 7 bản · Doanh Nghiệp: hằng ngày, giữ 14 bản.',
+        'Kinh Doanh: hằng ngày, giữ 7 bản. Doanh Nghiệp: hằng ngày, giữ 14 bản.',
         'Tự khôi phục trong trang quản lý hoặc nhờ kỹ thuật hỗ trợ (chính sách mẫu).'
       ],
       focus: [

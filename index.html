@@ -3,19 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Chatbot tư vấn · VibeHost — Đề 4 (bản demo vòng loại)</title>
+  <title>Chatbot tư vấn VibeHost — Đề 4 (bản demo vòng loại)</title>
   <meta name="description" content="Chatbot FAQ & đặt lịch tư vấn (Đề 4 · VIBE-CODING 2026). Bản demo vòng loại - Dữ liệu mô phỏng AI.">
-  <meta name="theme-color" content="#1849a9">
+  <meta name="theme-color" content="#fff4d6">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231849a9'/%3E%3Cpath d='M6 7.5A2 2 0 0 1 8 5.5h8a2 2 0 0 1 2 2v5.5a2 2 0 0 1-2 2h-4.6L8 18v-3H8a2 2 0 0 1-2-2z' fill='none' stroke='white' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#msg-input">Bỏ qua, tới ô nhập câu hỏi</a>
   <div class="app">
     <div class="demo-banner" role="note">
       <span class="banner-dot" aria-hidden="true"></span>
       <strong>Bản demo vòng loại - Dữ liệu mô phỏng AI</strong>
-      <span class="hide-sm">· Doanh nghiệp <span data-brand>VibeHost</span> là giả định, giá &amp; chính sách là dữ liệu mẫu</span>
-      <span class="show-sm">· dữ liệu mẫu</span>
+      <span class="hide-sm">Doanh nghiệp <span data-brand>VibeHost</span> là giả định, giá và chính sách là dữ liệu mẫu.</span>
+      <span class="show-sm">Giá là dữ liệu mẫu.</span>
     </div>
     <div class="storage-warning" id="storage-warning" role="alert" hidden>
       Trình duyệt đang chặn lưu trữ (localStorage): lịch hẹn chỉ được giữ tạm đến khi tải lại trang.
@@ -23,10 +24,8 @@
 
     <header class="topbar">
       <a class="brand" href="#/chat" aria-label="VibeHost — về màn hình tư vấn">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 7.5A2 2 0 0 1 8 5.5h8a2 2 0 0 1 2 2v5.5a2 2 0 0 1-2 2h-4.6L8 18v-3H8a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 10.25h5M9.5 12.75h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </span>
-        <span class="brand-text"><strong data-brand>VibeHost</strong><small>Tên miền &amp; hosting · trợ lý 24/7</small></span>
+        <span class="brand-mark plate-mini" aria-hidden="true" translate="no">24/7</span>
+        <span class="brand-text"><strong data-brand translate="no">VibeHost</strong><small>Tên miền và hosting cho shop nhỏ</small></span>
       </a>
       <nav class="tabs" aria-label="Chuyển màn hình">
         <a href="#/chat" data-route="chat">Tư vấn</a>
@@ -41,7 +40,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>
           <span>Demo tự động</span>
         </button>
-        <button type="button" class="btn primary" id="btn-book-top">
+        <button type="button" class="btn primary" id="btn-book-top" aria-label="Đặt lịch tư vấn">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
           <span>Đặt lịch</span>
         </button>
@@ -50,9 +49,10 @@
 
     <main class="views">
       <!-- MÀN HÌNH KHÁCH HÀNG -->
-      <section class="view chat-view" id="view-chat" aria-label="Chatbot tư vấn">
+      <section class="view chat-view" id="view-chat" aria-labelledby="chat-h1">
+        <h1 class="sr-only" id="chat-h1">Chatbot tư vấn tên miền và hosting VibeHost</h1>
         <aside class="sidebar" aria-label="Bộ kiến thức">
-          <h2>10 câu hỏi thường gặp</h2>
+          <h2>Câu hỏi thường gặp</h2>
           <ol class="topic-list" id="topic-list"></ol>
           <div class="info-card">
             <strong>Nhân viên tư vấn</strong>
@@ -81,7 +81,7 @@
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 19.5 20.5 12 4 4.5l.02 5.9L14.5 12 4.02 13.6z" fill="currentColor"/></svg>
             </button>
           </form>
-          <p class="composer-hint" id="composer-hint" aria-live="polite">Enter để gửi · Bot chỉ trả lời trong phạm vi bộ kiến thức mẫu</p>
+          <p class="composer-hint" id="composer-hint" aria-live="polite">Nhấn Enter để gửi. Bot chỉ trả lời trong phạm vi bộ kiến thức mẫu.</p>
         </div>
       </section>
 
@@ -162,7 +162,7 @@
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <p class="dlg-sub">Nhân viên <span data-brand>VibeHost</span> gọi lại đúng giờ hẹn · Thứ 2 – Thứ 7, 08:00–11:30 &amp; 13:30–17:00 (giờ Việt Nam).</p>
+      <p class="dlg-sub">Nhân viên <span data-brand>VibeHost</span> gọi lại đúng giờ hẹn. Giờ làm việc: Thứ 2 đến Thứ 7, 08:00–11:30 và 13:30–17:00 (giờ Việt Nam).</p>
 
       <div class="field">
         <label for="bk-name">Họ và tên <span class="req" aria-hidden="true">*</span></label>
@@ -232,7 +232,7 @@
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <p class="dlg-sub">Đề 4 · Chatbot FAQ &amp; đặt lịch tư vấn — VIBE-CODING 2026 · Đội Vibe · Bảng B – Kinh tế</p>
+      <p class="dlg-sub">Đề 4, Chatbot FAQ &amp; đặt lịch tư vấn. VIBE-CODING 2026, đội Vibe, Bảng B – Kinh tế.</p>
       <h3>Dành cho ai</h3>
       <p>Chủ shop và doanh nghiệp nhỏ đang cần tên miền, hosting — trong khi nhà cung cấp nhỏ như <span data-brand>VibeHost</span> (giả định) không đủ người trực 24/7.</p>
       <h3>Một tình huống cụ thể</h3>
