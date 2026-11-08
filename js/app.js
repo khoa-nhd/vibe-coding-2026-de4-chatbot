@@ -1,16 +1,18 @@
 /*!
- * app.js — Giao diện: khung chat, form đặt lịch, trang quản trị, demo tự động 5 tính năng
+ * app.js — Giao diện: khung chat, form đặt lịch, "Lịch hẹn của bạn", trang quản trị, demo tự động 5 tính năng
  * Đề 4 · VIBE-CODING 2026 · Bản demo vòng loại - Dữ liệu mô phỏng AI
  *
- * An toàn: mọi nội dung do người dùng nhập chỉ được đưa vào trang bằng textContent / setAttribute
- * (không dùng innerHTML với dữ liệu người dùng) → chống chèn mã HTML/JS.
+ * An toàn: mọi nội dung do người dùng nhập (kể cả dữ liệu đọc lại từ localStorage/sessionStorage) chỉ được đưa vào trang
+ * bằng textContent / setAttribute, hoặc qua md() đã escape HTML trước → chống chèn mã HTML/JS.
  */
 (function () {
   'use strict';
   var VC = window.VC;
   var B = VC.booking;
   var BRAND = VC.BRAND;
-  var TYPING_MS = 650; // hiệu ứng "đang soạn" cho giống trải nghiệm chat
+  var TYPING_MS = 650;            // hiệu ứng "đang soạn" cho giống trải nghiệm chat
+  var CHAT_KEY = 'vibe4.chat.v1'; // cuộc trò chuyện của phiên hiện tại (sessionStorage, mất khi đóng tab)
+  var MAX_SAVED = 80;
 
   /* ---------------- Tiện ích ---------------- */
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -23,7 +25,7 @@
         if (v === null || v === undefined || v === false) return;
         if (k === 'class') node.className = v;
         else if (k === 'text') node.textContent = v;
-        else if (k === 'html') node.innerHTML = v; // CHỈ dùng cho chuỗi tin cậy: icon tĩnh, nội dung bộ kiến thức đã escape
+        else if (k === 'html') node.innerHTML = v; // CHỈ dùng cho chuỗi tin cậy: icon tĩnh hoặc kết quả md() đã escape
         else if (k.indexOf('on') === 0) node.addEventListener(k.slice(2), v);
         else node.setAttribute(k, v === true ? '' : String(v));
       });
@@ -47,18 +49,52 @@
   function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   var finePointer = !!(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
 
+  var MARK = '<path d="M6 7.5A2 2 0 0 1 8 5.5h8a2 2 0 0 1 2 2v5.5a2 2 0 0 1-2 2h-4.6L8 18v-3H8a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 10.25h5M9.5 12.75h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>';
   var ICONS = {
-    bot: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="4" y="7" width="16" height="12" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9.5" cy="13" r="1.6" fill="currentColor"/><circle cx="14.5" cy="13" r="1.6" fill="currentColor"/><path d="M12 3.5V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-    cal: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    bot: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' + MARK + '</svg>',
+    cal: '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
     check: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="m5 12.5 4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     undo: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M9 6 4.5 10.5 9 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10.5h8.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
     trash: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    list: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.5" fill="currentColor"/><circle cx="4.5" cy="12" r="1.5" fill="currentColor"/><circle cx="4.5" cy="18" r="1.5" fill="currentColor"/></svg>'
+    list: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.5" fill="currentColor"/><circle cx="4.5" cy="12" r="1.5" fill="currentColor"/><circle cx="4.5" cy="18" r="1.5" fill="currentColor"/></svg>',
+    info: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="1.1" fill="currentColor"/></svg>'
   };
 
   var dom = {};
   var bot = VC.createBot();
   var busy = false;
+  var history = []; // các tin nhắn của phiên: { r: 'u', t, at } | { r: 'b', res, at }
+
+  /* ---------------- Lưu cuộc trò chuyện trong phiên (tải lại trang không mất) ---------------- */
+  var session = (function () {
+    var ok = false;
+    try { var k = '__vibe4_s__'; window.sessionStorage.setItem(k, '1'); window.sessionStorage.removeItem(k); ok = true; } catch (e) { ok = false; }
+    return {
+      get: function () { if (!ok) return null; try { return window.sessionStorage.getItem(CHAT_KEY); } catch (e) { return null; } },
+      set: function (v) { if (!ok) return; try { window.sessionStorage.setItem(CHAT_KEY, v); } catch (e) { /* đầy bộ nhớ: bỏ qua */ } },
+      clear: function () { if (!ok) return; try { window.sessionStorage.removeItem(CHAT_KEY); } catch (e) { /* bỏ qua */ } }
+    };
+  })();
+  function saveChat() { session.set(JSON.stringify({ v: 1, msgs: history.slice(-MAX_SAVED), state: bot.getState() })); }
+  function restoreChat() {
+    var raw = session.get();
+    if (!raw) return false;
+    try {
+      var data = JSON.parse(raw);
+      if (!data || data.v !== 1 || !Array.isArray(data.msgs) || !data.msgs.length) return false;
+      bot.setState(data.state);
+      dom.log.innerHTML = '';
+      history = [];
+      data.msgs.forEach(function (m) {
+        if (m && m.r === 'u' && typeof m.t === 'string') addUser(m.t, m.at);
+        else if (m && m.r === 'b' && m.res && typeof m.res === 'object') addBot(m.res, m.at);
+      });
+      return history.length > 0;
+    } catch (e) {
+      session.clear();
+      return false;
+    }
+  }
 
   /* ---------------- Khung chat ---------------- */
   function scrollToMessage(node) {
@@ -72,11 +108,13 @@
     else log.scrollTop = log.scrollHeight;
   }
 
-  function addUser(text) {
+  function addUser(text, at) {
+    at = at || timeNow();
     var msg = el('div', { class: 'msg user' }, [
-      el('div', { class: 'bubble' }, [el('p', { text: text }), el('time', { class: 'msg-time', text: timeNow() })])
+      el('div', { class: 'bubble' }, [el('p', { text: text }), el('time', { class: 'msg-time', text: at })])
     ]);
     dom.log.appendChild(msg);
+    history.push({ r: 'u', t: text, at: at });
     scrollToMessage(msg);
     return msg;
   }
@@ -91,15 +129,34 @@
     });
   }
 
-  function addBot(res) {
+  function receiptNode(rc) {
+    function row(k, v) { return el('div', null, [el('dt', { text: k }), el('dd', { text: v })]); }
+    return el('div', { class: 'receipt' }, [
+      el('div', { class: 'receipt-head' }, [
+        el('span', { class: 'receipt-icon', html: ICONS.check }),
+        el('div', null, [el('strong', { text: 'Đã ghi nhận lịch hẹn' }), el('span', { text: 'Trạng thái: Chờ nhân viên gọi lại' })])
+      ]),
+      el('dl', { class: 'receipt-rows' }, [row('Mã lịch hẹn', '#' + rc.code), row('Ngày hẹn', rc.date), row('Giờ hẹn', rc.time), row('Số điện thoại', rc.phone)]),
+      el('p', { class: 'receipt-note', text: 'Nhân viên ' + BRAND.name + ' sẽ gọi lại đúng giờ hẹn (giờ Việt Nam). Bạn có thể xem lại hoặc hủy trong “Lịch hẹn của bạn”.' }),
+      el('button', { type: 'button', class: 'btn outline small', text: 'Xem lịch hẹn của bạn', onclick: function () { openMine(); } })
+    ]);
+  }
+
+  function addBot(res, at) {
+    at = at || timeNow();
     var bubble = el('div', { class: 'bubble' });
-    (res.paragraphs || []).forEach(function (p) { bubble.appendChild(el('p', { html: md(p) })); });
+    if (res.receipt) bubble.appendChild(receiptNode(res.receipt));
+    if (res.lead) bubble.appendChild(el('p', { class: 'lead', html: md(res.lead) }));
+    var paras = res.paragraphs || [];
+    paras.forEach(function (p, i) {
+      var isRepeat = res.type === 'answer' && paras.length > 1 && i === 0;
+      bubble.appendChild(el('p', { class: isRepeat ? 'repeat-note' : null, html: md(p) }));
+    });
     if (res.bullets && res.bullets.length) {
       var ul = el('ul', { class: 'points' });
       res.bullets.forEach(function (b) { ul.appendChild(el('li', { html: md(b) })); });
       bubble.appendChild(ul);
     }
-    if (res.closing) bubble.appendChild(el('p', { class: 'closing', html: md(res.closing) }));
     if (res.menu && res.menu.length) {
       var menu = el('div', { class: 'menu' });
       res.menu.forEach(function (m) { menu.appendChild(chip(m, 'chip-menu')); });
@@ -115,7 +172,7 @@
     } else if (res.type === 'confirm') {
       meta.appendChild(el('span', { class: 'tag tag-ok', text: 'Đã lưu vào localStorage' }));
     }
-    meta.appendChild(el('time', { class: 'msg-time', text: timeNow() }));
+    meta.appendChild(el('time', { class: 'msg-time', text: at }));
     bubble.appendChild(meta);
 
     if (res.type === 'answer' && res.original) {
@@ -123,10 +180,11 @@
         ? 'Bạn chọn câu hỏi có sẵn nên bot lấy thẳng FAQ ' + pad2(res.faqNo) + '.'
         : 'Bot chọn FAQ ' + pad2(res.faqNo) + ' vì khớp từ khóa: ' + (res.hits || []).join(', ') + ' (điểm ' + Number(res.score).toFixed(1) +
           ', ngưỡng ' + VC.engine.ANSWER_THRESHOLD.toFixed(1) + ')' + (res.corrections && res.corrections.length ? '; tự sửa lỗi gõ: ' + res.corrections.join(', ') : '') + '.';
+      var focusNote = res.focus ? ' Câu hỏi nhắc tới “' + res.focus.label + '” nên câu đầu trả lời thẳng ý đó.' : '';
       bubble.appendChild(el('details', { class: 'origin' }, [
         el('summary', { text: 'Xem câu trả lời gốc trong bộ kiến thức' }),
         el('p', { class: 'origin-text', text: res.original }),
-        el('p', { class: 'origin-note', text: why + ' Phần diễn đạt phía trên do AI mô phỏng (mock) tạo từ câu gốc này — mẫu câu số ' + res.variant + '.' })
+        el('p', { class: 'origin-note', text: why + focusNote + ' Phần diễn đạt phía trên do AI mô phỏng (mock) tạo từ câu gốc này — mẫu câu số ' + res.variant + '.' })
       ]));
     }
 
@@ -136,7 +194,7 @@
         if (a.type !== 'booking') return;
         acts.appendChild(el('button', {
           type: 'button',
-          class: 'btn primary btn-book',
+          class: 'btn ' + (a.source === 'chat-cta' ? 'outline' : 'primary') + ' btn-book',
           html: ICONS.cal + '<span>' + escapeHtml(a.label) + '</span>',
           onclick: function () { openBooking({ note: a.note || '', source: a.source || 'direct' }); }
         }));
@@ -151,10 +209,8 @@
       var row = el('div', { class: 'chips' });
       (res.suggestions || []).forEach(function (s) { row.appendChild(chip(s)); });
       if (res.showMenuLink) {
-        row.appendChild(el('button', {
-          type: 'button', class: 'chip chip-ghost', html: ICONS.list + '<span>Xem 10 câu hỏi</span>',
-          onclick: function () { send('Xem 10 câu hỏi'); }
-        }));
+        row.appendChild(el('button', { type: 'button', class: 'chip chip-ghost', html: ICONS.list + '<span>Xem 10 câu hỏi</span>', onclick: function () { send('Xem 10 câu hỏi'); } }));
+        row.appendChild(el('button', { type: 'button', class: 'chip chip-ghost chip-about', html: ICONS.info + '<span>Giới thiệu bản demo</span>', onclick: function () { openAbout(); } }));
       }
       box.appendChild(row);
       bubble.appendChild(box);
@@ -165,6 +221,7 @@
       bubble
     ]);
     dom.log.appendChild(msg);
+    history.push({ r: 'b', res: res, at: at });
     scrollToMessage(msg);
     return msg;
   }
@@ -172,7 +229,7 @@
   function showTyping() {
     var node = el('div', { class: 'msg bot typing', 'aria-label': 'Trợ lý đang soạn câu trả lời' }, [
       el('div', { class: 'avatar', html: ICONS.bot }),
-      el('div', { class: 'bubble' }, [el('span', { class: 'dot' }), el('span', { class: 'dot' }), el('span', { class: 'dot' })])
+      el('div', { class: 'bubble' }, [el('span', { class: 'dot-t' }), el('span', { class: 'dot-t' }), el('span', { class: 'dot-t' })])
     ]);
     dom.log.appendChild(node);
     scrollToMessage(null);
@@ -220,8 +277,12 @@
       var res = bot.reply(clean, opts || null);
       typing.remove();
       if (!res) return null;
+      if (res.type === 'answer') B.track({ type: 'answer', faqId: res.faqId });
+      else if (res.type === 'fallback') B.track({ type: 'fallback' });
+      else B.track({ type: 'other' });
       if (res.type === 'fallback' && res.reason !== 'empty') { B.logUnanswered(clean); refreshBadges(); }
       var node = addBot(res);
+      saveChat();
       if (truncated) toast('Câu hỏi dài hơn ' + VC.engine.MAX_LEN + ' ký tự nên đã được rút gọn.', 'warn');
       if (res.autoBooking) openBooking({ source: 'chat-intent' });
       return node;
@@ -241,7 +302,10 @@
   function resetChat() {
     bot.reset();
     dom.log.innerHTML = '';
+    history = [];
+    session.clear();
     addBot(bot.welcome());
+    saveChat();
   }
 
   /* ---------------- Hộp thoại ---------------- */
@@ -253,7 +317,7 @@
     if (typeof d.close === 'function') { if (d.open) d.close(); }
     else d.removeAttribute('open');
   }
-  function anyDialogOpen() { return !!(dom.bkDialog.open || dom.cDialog.open); }
+  function anyDialogOpen() { return !!(dom.bkDialog.open || dom.cDialog.open || dom.mineDialog.open || dom.aboutDialog.open); }
 
   function confirmDialog(message, okLabel) {
     return new Promise(function (resolve) {
@@ -269,6 +333,8 @@
       showDialog(dom.cDialog);
     });
   }
+
+  function openAbout() { showDialog(dom.aboutDialog); }
 
   /* ---------------- Đặt lịch ---------------- */
   var bookingSource = 'direct';
@@ -300,8 +366,20 @@
   }
 
   function updateNoteCount() {
-    var n = dom.bkNote.value.length;
-    dom.noteCount.textContent = n + '/' + B.CONFIG.noteMax;
+    dom.noteCount.textContent = dom.bkNote.value.length + '/' + B.CONFIG.noteMax;
+  }
+
+  // Danh sách ngày dạng "Thứ Tư, 11/11" — tránh ô chọn ngày của trình duyệt hiển thị kiểu Mỹ (11/09 dễ hiểu nhầm thành 11 tháng 9)
+  function fillDateOptions(list, now) {
+    dom.bkDate.innerHTML = '';
+    dom.bkDate.appendChild(el('option', { value: '', text: '— Chọn ngày —' }));
+    for (var i = 0; i <= B.CONFIG.maxDaysAhead; i++) {
+      var d = B.addDays(now.date, i);
+      var short = B.formatShortDate(d);
+      var label = i === 0 ? 'Hôm nay (' + short + ')' : i === 1 ? 'Ngày mai (' + short + ')' : B.formatDate(d).replace(/\/\d{4}$/, '');
+      var reason = !B.isOpenDay(d) ? 'nghỉ' : B.getSlots(d, list, now).some(function (s) { return s.available; }) ? '' : (i === 0 ? 'hết giờ' : 'kín lịch');
+      dom.bkDate.appendChild(el('option', { value: d, text: label + (reason ? ' · ' + reason : ''), disabled: !!reason }));
+    }
   }
 
   function refreshSlots(showDateError) {
@@ -332,22 +410,11 @@
     dom.slotHint.textContent = B.formatDate(date) + ' · còn ' + free + '/' + slots.length + ' khung giờ trống (giờ Việt Nam).';
   }
 
-  // Danh sách ngày dạng "Thứ Tư, 11/11" — tránh ô chọn ngày của trình duyệt hiển thị theo kiểu Mỹ (11/09 dễ hiểu nhầm thành 11 tháng 9)
-  function fillDateOptions(list, now) {
-    dom.bkDate.innerHTML = '';
-    dom.bkDate.appendChild(el('option', { value: '', text: '— Chọn ngày —' }));
-    for (var i = 0; i <= B.CONFIG.maxDaysAhead; i++) {
-      var d = B.addDays(now.date, i);
-      var short = B.formatShortDate(d);
-      var label = i === 0 ? 'Hôm nay (' + short + ')' : i === 1 ? 'Ngày mai (' + short + ')' : B.formatDate(d).replace(/\/\d{4}$/, '');
-      var reason = !B.isOpenDay(d) ? 'nghỉ' : B.getSlots(d, list, now).some(function (s) { return s.available; }) ? '' : (i === 0 ? 'hết giờ' : 'kín lịch');
-      dom.bkDate.appendChild(el('option', { value: d, text: label + (reason ? ' · ' + reason : ''), disabled: !!reason }));
-    }
-  }
-
   function openBooking(opts) {
     opts = opts || {};
     bookingSource = opts.source || 'direct';
+    closeDialog(dom.mineDialog);
+    closeDialog(dom.aboutDialog);
     dom.bkForm.reset();
     clearErrors();
     var now = B.vnNow();
@@ -377,7 +444,7 @@
         date: dom.bkDate.value,
         time: dom.bkTime.value,
         note: dom.bkNote.value
-      }, { source: bookingSource });
+      }, { source: bookingSource, mine: true });
     } catch (err) {
       if (window.console) console.error(err);
       res = { ok: false, errors: { _form: 'Đã có lỗi khi lưu lịch hẹn. Vui lòng thử lại.' } };
@@ -393,21 +460,67 @@
     lastBookedId = res.record.id;
     closeDialog(dom.bkDialog);
     var r = res.record;
-    var msg = bot.systemMessage([
-      '✅ **Đặt lịch thành công!** Mã lịch hẹn **#' + B.codeOf(r) + '**.',
-      'Thời gian: **' + B.formatDate(r.date) + ' lúc ' + r.time + '** (giờ Việt Nam).',
-      'Nhân viên {brand} sẽ gọi số **' + B.maskPhone(r.phone) + '** đúng giờ hẹn. Trong lúc chờ, bạn cứ hỏi tiếp mình nhé!'
-    ]);
+    var msg = bot.systemMessage([]);
     msg.type = 'confirm';
+    msg.receipt = { code: B.codeOf(r), date: B.formatDate(r.date), time: r.time, phone: B.maskPhone(r.phone) };
+    if (currentView() !== 'chat') location.hash = '#/chat';
     addBot(msg);
-    toast('Đã lưu lịch hẹn ' + r.time + ', ' + B.formatDate(r.date) + '.', 'success');
+    saveChat();
+    toast('Đã ghi nhận lịch hẹn ' + r.time + ', ' + B.formatDate(r.date) + '.', 'success');
     refreshBadges();
-    if (currentView() === 'admin') renderAdmin();
+    refreshMine();
+  }
+
+  /* ---------------- Lịch hẹn của bạn (phía khách) ---------------- */
+  function refreshMine() {
+    var n = B.listMine().filter(function (r) { return r.status === 'pending'; }).length;
+    var all = B.listMine().length;
+    dom.mineBtn.hidden = all === 0;
+    dom.mineCount.textContent = n;
+    dom.mineCount.hidden = n === 0;
+  }
+  function renderMine() {
+    var list = B.listMine();
+    dom.mineList.innerHTML = '';
+    if (!list.length) {
+      dom.mineList.appendChild(el('li', { class: 'mine-empty', text: 'Bạn chưa có lịch hẹn nào trên trình duyệt này.' }));
+      return;
+    }
+    list.forEach(function (r) {
+      var closed = r.status !== 'pending';
+      dom.mineList.appendChild(el('li', { class: 'mine-item' + (closed ? ' closed' : ''), 'data-id': r.id }, [
+        el('span', { class: 'mine-when', text: r.time + ' · ' + B.formatDate(r.date) }),
+        el('span', { class: 'status ' + r.status, text: B.STATUS_LABEL[r.status] }),
+        el('p', { class: 'mine-meta', text: 'Mã #' + B.codeOf(r) + ' · ' + B.maskPhone(r.phone) + (r.note ? ' · “' + r.note + '”' : '') }),
+        r.status === 'pending'
+          ? el('div', { class: 'mine-actions' }, [el('button', { type: 'button', class: 'btn danger-ghost small', 'data-act': 'cancel', 'data-id': r.id, text: 'Hủy lịch hẹn' })])
+          : null
+      ]));
+    });
+  }
+  function openMine() { renderMine(); showDialog(dom.mineDialog); }
+  function onMineClick(e) {
+    var btn = e.target.closest ? e.target.closest('[data-act="cancel"]') : null;
+    if (!btn) return;
+    var rec = B.getById(btn.getAttribute('data-id'));
+    if (!rec) { renderMine(); refreshMine(); return; }
+    confirmDialog('Hủy lịch hẹn lúc ' + rec.time + ', ' + B.formatDate(rec.date) + '? Nhân viên sẽ không gọi lại cho lịch này.', 'Hủy lịch').then(function (ok) {
+      if (!ok) return;
+      var res = B.cancelMine(rec.id);
+      if (!res.ok) { toast(res.error, 'warn'); renderMine(); return; }
+      renderMine();
+      refreshMine();
+      refreshBadges();
+      if (currentView() === 'admin') renderAdmin();
+      addBot(bot.systemMessage(['Đã hủy lịch hẹn **#' + B.codeOf(rec) + '** (' + rec.time + ', ' + B.formatDate(rec.date) + '). Khi cần, bạn có thể đặt lại bất cứ lúc nào.']));
+      saveChat();
+      toast('Đã hủy lịch hẹn #' + B.codeOf(rec) + '.', 'success');
+    });
   }
 
   /* ---------------- Quản trị ---------------- */
   var admFilter = 'all';
-  function isPending(r) { return r.status !== 'done'; }
+  function isPending(r) { return r.status === 'pending'; }
 
   function refreshBadges(list) {
     list = list || B.loadAppointments().list;
@@ -425,26 +538,60 @@
   }
 
   function apptCard(r, now) {
-    var done = r.status === 'done';
+    var closed = B.isClosed(r);
     var dayTag = r.date === now.date ? el('span', { class: 'tag tag-today', text: 'Hôm nay' })
       : r.date < now.date ? el('span', { class: 'tag tag-past', text: 'Đã qua ngày hẹn' }) : null;
-    return el('article', { class: 'appt' + (done ? ' done' : ''), 'data-id': r.id }, [
+    var actions = [];
+    if (r.status === 'pending') {
+      actions.push(el('button', { type: 'button', class: 'btn small success', 'data-act': 'toggle', 'data-id': r.id, html: ICONS.check + '<span>Đã xử lý</span>' }));
+    } else if (r.status === 'done') {
+      actions.push(el('button', { type: 'button', class: 'btn small ghost', 'data-act': 'toggle', 'data-id': r.id, html: ICONS.undo + '<span>Hoàn tác</span>' }));
+    }
+    actions.push(el('button', { type: 'button', class: 'btn small danger-ghost', 'data-act': 'delete', 'data-id': r.id, html: ICONS.trash + '<span>Xóa</span>' }));
+    return el('article', { class: 'appt' + (closed ? ' closed' : ''), 'data-id': r.id }, [
       el('div', { class: 'appt-when' }, [el('b', { text: r.time }), el('span', { text: B.formatDate(r.date) }), dayTag]),
-      el('div', { class: 'appt-body' }, [
+      el('div', { class: 'appt-who' }, [
         el('h3', null, [el('span', { text: r.name }), r.sample ? el('span', { class: 'tag tag-sample', text: 'Dữ liệu mẫu' }) : null]),
-        el('a', { class: 'appt-phone', href: 'tel:' + r.phone, text: B.formatPhone(r.phone) }),
-        r.note ? el('p', { class: 'appt-note', text: '“' + r.note + '”' }) : null,
-        el('p', { class: 'appt-meta', text: (B.SOURCE_LABEL[r.source] || 'Không rõ nguồn') + ' · Đặt lúc ' + (B.formatISO(r.createdAt) || '—') + ' · Mã #' + B.codeOf(r) })
+        el('a', { class: 'appt-phone', href: 'tel:' + r.phone, text: B.formatPhone(r.phone) })
       ]),
-      el('div', { class: 'appt-actions' }, [
-        el('span', { class: 'status ' + (done ? 'done' : 'pending'), text: B.STATUS_LABEL[done ? 'done' : 'pending'] }),
-        el('button', {
-          type: 'button', class: 'btn small ' + (done ? 'ghost' : 'success'), 'data-act': 'toggle', 'data-id': r.id,
-          html: (done ? ICONS.undo : ICONS.check) + '<span>' + (done ? 'Chưa xử lý' : 'Đã xử lý') + '</span>'
-        }),
-        el('button', { type: 'button', class: 'btn small danger-ghost', 'data-act': 'delete', 'data-id': r.id, html: ICONS.trash + '<span>Xóa</span>' })
-      ])
+      el('div', { class: 'appt-what' }, [
+        r.note ? el('p', { class: 'appt-note', text: '“' + r.note + '”' }) : el('p', { class: 'appt-note muted', text: 'Không ghi nội dung' }),
+        el('p', { class: 'appt-meta', text: (B.SOURCE_LABEL[r.source] || 'Không rõ nguồn') + ' · đặt lúc ' + (B.formatISO(r.createdAt) || '—') + ' · #' + B.codeOf(r) })
+      ]),
+      el('div', { class: 'appt-state' }, [el('span', { class: 'status ' + r.status, text: B.STATUS_LABEL[r.status] })]),
+      el('div', { class: 'appt-actions' }, actions)
     ]);
+  }
+
+  function renderInsights() {
+    var s = B.getStats();
+    var asked = s.answered + s.fallback; // không tính chào hỏi, cảm ơn…
+    dom.insQuestions.textContent = asked;
+    dom.insAnswered.textContent = asked ? Math.round(s.answered / asked * 100) + '%' : '—';
+    dom.insAnsweredSub.textContent = s.answered + ' câu trả lời từ bộ kiến thức';
+    dom.insFallback.textContent = s.fallback;
+    dom.insBookings.textContent = s.bookings;
+    dom.insSince.textContent = asked
+      ? 'Số liệu thật, đếm từ các cuộc trò chuyện trên trình duyệt này từ ' + B.formatISO(s.since) + ' (không tính câu chào hỏi, cảm ơn).'
+      : 'Chưa có câu hỏi nào trên trình duyệt này — hãy thử hỏi bot ở màn hình Tư vấn.';
+    var byId = {};
+    VC.FAQ.forEach(function (f) { byId[f.id] = f; });
+    var entries = Object.keys(s.byFaq).map(function (id) { return { f: byId[id], n: s.byFaq[id] }; })
+      .filter(function (e) { return e.f && e.n > 0; })
+      .sort(function (a, b) { return (b.n - a.n) || (a.f.no - b.f.no); })
+      .slice(0, 5);
+    dom.insRank.innerHTML = '';
+    if (!entries.length) { dom.insRank.appendChild(el('li', { class: 'rank-empty', text: 'Chưa có dữ liệu.' })); return; }
+    var max = entries[0].n;
+    entries.forEach(function (e) {
+      var share = s.answered ? Math.round(e.n / s.answered * 100) : 0;
+      var label = e.f.chip || e.f.question;
+      dom.insRank.appendChild(el('li', { title: label + ': ' + e.n + ' lượt hỏi (' + share + '% số câu bot trả lời)', 'aria-label': label + ': ' + e.n + ' lượt hỏi' }, [
+        el('span', { class: 'rank-name', text: label }),
+        el('span', { class: 'rank-bar', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.max(4, Math.round(e.n / max * 100)) + '%' })]),
+        el('span', { class: 'rank-count', text: String(e.n) })
+      ]));
+    });
   }
 
   var corruptedNotified = false;
@@ -457,20 +604,20 @@
     var list = loaded.list;
     var now = B.vnNow();
     var pending = list.filter(isPending).length;
-    var done = list.length - pending;
+    var closedCount = list.filter(B.isClosed).length;
     var logs = B.listUnanswered();
     dom.stTotal.textContent = list.length;
     dom.stPending.textContent = pending;
-    dom.stToday.textContent = list.filter(function (r) { return r.date === now.date; }).length;
+    dom.stToday.textContent = list.filter(function (r) { return r.date === now.date && r.status !== 'cancelled'; }).length;
     dom.stUnanswered.textContent = logs.length;
-    dom.clearDone.disabled = done === 0;
-    dom.clearDoneCount.textContent = done;
+    dom.clearDone.disabled = closedCount === 0;
+    dom.clearDoneCount.textContent = closedCount;
 
     var q = VC.normalize(dom.search.value);
     var qDigits = dom.search.value.replace(/\D/g, '');
     var shown = list.filter(function (r) {
       if (admFilter === 'pending' && !isPending(r)) return false;
-      if (admFilter === 'done' && isPending(r)) return false;
+      if (admFilter === 'done' && !B.isClosed(r)) return false;
       if (!q) return true;
       return VC.normalize(r.name).indexOf(q) > -1 || VC.normalize(r.note || '').indexOf(q) > -1 ||
         (qDigits.length >= 3 && r.phone.indexOf(qDigits) > -1);
@@ -491,6 +638,7 @@
     dom.storageNote.textContent = B.storageMode() === 'local'
       ? 'Dữ liệu lưu trên trình duyệt này (localStorage) — không gửi đi đâu, thiết bị khác sẽ không thấy.'
       : 'Trình duyệt đang chặn localStorage: dữ liệu chỉ giữ tạm đến khi tải lại trang.';
+    renderInsights();
     refreshBadges(list);
   }
 
@@ -504,13 +652,15 @@
       var next = rec.status === 'done' ? 'pending' : 'done';
       B.setStatus(id, next);
       renderAdmin();
+      refreshMine();
       toast(next === 'done' ? 'Đã đánh dấu “Đã xử lý” cho lịch của ' + rec.name + '.' : 'Đã chuyển lịch của ' + rec.name + ' về “Chờ xử lý”.', 'success');
     } else {
       confirmDialog('Xóa lịch hẹn của ' + rec.name + ' (' + rec.time + ', ' + B.formatDate(rec.date) + ')?' +
-        (rec.status !== 'done' ? ' Lưu ý: lịch này CHƯA được xử lý.' : '') + ' Thao tác không thể hoàn tác.', 'Xóa lịch').then(function (ok) {
+        (rec.status === 'pending' ? ' Lưu ý: lịch này CHƯA được xử lý.' : '') + ' Thao tác không thể hoàn tác.', 'Xóa lịch').then(function (ok) {
         if (!ok) return;
         B.remove(id);
         renderAdmin();
+        refreshMine();
         toast('Đã xóa lịch hẹn của ' + rec.name + '.', 'success');
       });
     }
@@ -554,18 +704,23 @@
     toastTimer = setTimeout(function () { dom.toast.hidden = true; }, ms || 3200);
   }
 
-  /* ---------------- Demo tự động 5 tính năng (thao tác trên chính giao diện thật) ---------------- */
+  /* ---------------- Demo tự động 5 tính năng (thao tác trên chính giao diện thật, có con trỏ minh họa) ---------------- */
   var Demo = (function () {
     var running = false;
     var cancelled = false;
     function guard() { if (cancelled) throw new Error('demo-cancelled'); }
     function wait(ms) { return delay(ms).then(guard); }
-    function placeCaption() {
-      var host = dom.cDialog.open ? dom.cDialog : dom.bkDialog.open ? dom.bkDialog : document.body;
+    function topHost() {
+      var open = [dom.cDialog, dom.bkDialog, dom.mineDialog, dom.aboutDialog].filter(function (d) { return d.open; });
+      return open.length ? open[0] : document.body;
+    }
+    function placeOverlays() { // hộp thoại nằm ở "top layer" → chú thích và con trỏ phải nằm trong hộp thoại đang mở mới nhìn thấy
+      var host = topHost();
       if (dom.cap.parentNode !== host) host.appendChild(dom.cap);
+      if (dom.cursor.parentNode !== host) host.appendChild(dom.cursor);
     }
     function caption(step, text) {
-      placeCaption();
+      placeOverlays();
       dom.capStep.textContent = step;
       dom.capText.textContent = text;
       dom.cap.hidden = false;
@@ -575,25 +730,40 @@
       node.classList.add('demo-focus');
       setTimeout(function () { node.classList.remove('demo-focus'); }, 1600);
     }
+    function moveTo(node) {
+      placeOverlays();
+      var r = node.getBoundingClientRect();
+      var x = Math.round(r.left + Math.min(r.width / 2, 120));
+      var y = Math.round(r.top + r.height / 2);
+      dom.cursor.style.transform = 'translate(' + (x - 5) + 'px,' + (y - 3) + 'px)';
+      return wait(560);
+    }
     function click(node) {
       guard();
       if (!node) throw new Error('không tìm thấy nút cần bấm');
       ring(node);
-      return wait(600).then(function () { node.click(); });
+      return moveTo(node).then(function () {
+        dom.cursor.classList.remove('clicking');
+        void dom.cursor.offsetWidth;
+        dom.cursor.classList.add('clicking');
+        return wait(160);
+      }).then(function () { node.click(); });
     }
     function type(input, text, cps) {
       guard();
-      input.focus();
-      input.value = '';
-      var i = 0;
-      return new Promise(function (resolve, reject) {
-        (function step() {
-          if (cancelled) { reject(new Error('demo-cancelled')); return; }
-          if (i >= text.length) { resolve(); return; }
-          input.value += text.charAt(i++);
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          setTimeout(step, 1000 / (cps || 22));
-        })();
+      return moveTo(input).then(function () {
+        input.focus();
+        input.value = '';
+        var i = 0;
+        return new Promise(function (resolve, reject) {
+          (function step() {
+            if (cancelled) { reject(new Error('demo-cancelled')); return; }
+            if (i >= text.length) { resolve(); return; }
+            input.value += text.charAt(i++);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            setTimeout(step, 1000 / (cps || 22));
+          })();
+        });
       });
     }
     function waitFor(fn, timeout) {
@@ -611,7 +781,7 @@
     function lastBot() { var all = $all('.msg.bot:not(.typing)', dom.log); return all[all.length - 1]; }
     async function ask(text) {
       await type(dom.input, text, 24);
-      await wait(350);
+      await wait(300);
       await click(dom.send);
       await waitFor(function () { return !busy; });
       await wait(250);
@@ -626,11 +796,12 @@
       dom.demoBtn.disabled = true;
       var t0 = Date.now();
       try {
-        closeDialog(dom.bkDialog);
-        closeDialog(dom.cDialog);
+        [dom.bkDialog, dom.cDialog, dom.mineDialog, dom.aboutDialog].forEach(closeDialog);
         if (currentView() !== 'chat') { location.hash = '#/chat'; await wait(400); }
         resetChat();
-        caption('Demo', 'Đề 4 · Chatbot FAQ & đặt lịch tư vấn — demo tự động trên giao diện thật');
+        dom.cursor.style.transform = 'translate(' + Math.round(window.innerWidth / 2) + 'px,' + Math.round(window.innerHeight * 0.62) + 'px)';
+        dom.cursor.hidden = false;
+        caption('Demo', 'Đề 4 · Chatbot FAQ & đặt lịch tư vấn — thao tác tự động trên giao diện thật');
         await wait(3000);
 
         caption('1/5', 'Khung chat trả lời câu hỏi thường gặp từ bộ kiến thức có sẵn (10 câu)');
@@ -639,75 +810,75 @@
 
         caption('2/5', 'AI diễn đạt lại cho tự nhiên (xem được câu gốc) + gợi ý 3 câu hỏi liên quan');
         var det = $('details.origin', m1);
-        ring(det);
-        await wait(700);
-        det.open = true;
+        await click($('summary', det));
         scrollToMessage(m1);
-        await wait(5000);
+        await wait(4800);
         var chips = $all('.suggest .chip', m1);
         chips.forEach(function (c) { c.classList.add('demo-focus'); });
-        await wait(1800);
+        await wait(1600);
         chips.forEach(function (c) { c.classList.remove('demo-focus'); });
         await click(chips[0]);
         await waitFor(function () { return !busy; });
-        await wait(5000);
-        caption('2/5', 'Gõ không dấu vẫn hiểu — mỗi câu trả lời luôn kèm 3 gợi ý mới');
-        await ask('ssl co mien phi khong');
-        await wait(5000);
+        await wait(4800);
+        caption('2/5', 'Câu trả lời bám đúng ý hỏi — gõ không dấu vẫn hiểu, luôn kèm 3 gợi ý mới');
+        await ask('ten mien .com gia bao nhieu');
+        await wait(4800);
 
         caption('3/5', 'Câu hỏi ngoài bộ kiến thức → không đoán mò, chủ động đề xuất đặt lịch với nhân viên');
         var m3 = await ask('Bên bạn có nhận thiết kế logo cho shop không?');
-        await wait(4500);
+        await wait(4200);
         await click($('.btn-book', m3));
         await waitFor(function () { return dom.bkDialog.open; });
         caption('4/5', 'Form đặt lịch: chọn ngày/giờ, nhập tên + số điện thoại → lưu localStorage');
-        await wait(2500);
+        await wait(2400);
         await click(dom.bkSubmit);
         caption('4/5', 'Gửi khi còn thiếu thông tin → báo lỗi ngay dưới từng ô, không lưu');
-        await wait(3200);
+        await wait(3000);
         await type(dom.bkName, 'Nguyễn Thị Lan', 16);
         await type(dom.bkPhone, '0900 123 456', 12);
-        await wait(500);
+        await wait(400);
         var opt = Array.prototype.filter.call(dom.bkTime.options, function (o) { return o.value && !o.disabled; })[0];
         if (!opt) throw new Error('không còn khung giờ trống');
+        await moveTo(dom.bkTime);
         ring(dom.bkTime);
-        await wait(700);
         dom.bkTime.value = opt.value;
         dom.bkTime.dispatchEvent(new Event('change', { bubbles: true }));
         setFieldError('time', '');
         caption('4/5', 'Ngày gợi ý sẵn là ngày làm việc gần nhất; giờ đã qua hoặc đã có người đặt bị khóa');
-        await wait(3000);
+        await wait(2800);
         await click(dom.bkSubmit);
         await waitFor(function () { return !dom.bkDialog.open; });
-        caption('4/5', 'Đã lưu lịch hẹn — chatbot xác nhận ngay trong khung chat');
+        caption('4/5', 'Đã ghi nhận — chatbot xác nhận mã lịch, giờ hẹn và trạng thái ngay trong khung chat');
         await wait(4500);
 
-        caption('5/5', 'Trang quản trị: xem danh sách lịch hẹn và câu hỏi bot chưa trả lời được');
-        location.hash = '#/admin';
+        caption('5/5', 'Trang quản trị: xem danh sách lịch hẹn mới');
+        await click($('[data-route="admin"]'));
         await wait(600);
         var sel = '.appt[data-id="' + lastBookedId + '"]';
         var card = await waitFor(function () { return $(sel, dom.list); });
         card.scrollIntoView({ block: 'center' });
         ring(card);
-        await wait(3500);
-        dom.logPanel.scrollIntoView({ block: 'center' });
-        ring(dom.logPanel);
         await wait(3000);
+        caption('5/5', 'Hiệu quả chatbot: số câu bot tự trả lời, số câu chuyển nhân viên và câu hỏi chưa trả lời được');
+        $('#adm-insights').scrollIntoView({ block: 'start' });
+        ring($('#adm-insights'));
+        await wait(3600);
         card = $(sel, dom.list);
         card.scrollIntoView({ block: 'center' });
         caption('5/5', 'Nhân viên gọi lại xong → bấm “Đã xử lý”, sau đó xóa lịch đã xử lý');
-        await wait(1200);
+        await wait(1000);
         await click($('[data-act="toggle"]', card));
-        await wait(2500);
+        await wait(2200);
         card = $(sel, dom.list);
         await click($('[data-act="delete"]', card));
         await waitFor(function () { return dom.cDialog.open; });
-        placeCaption();
-        await wait(1600);
+        placeOverlays();
+        await wait(1200);
         await click(dom.cOk);
         await waitFor(function () { return !dom.cDialog.open; });
-        caption('✓', 'Hoàn tất 5/5 tính năng · Bản demo vòng loại - Dữ liệu mô phỏng AI');
-        await wait(4500);
+        placeOverlays();
+        caption('Xong', 'Hoàn tất 5/5 tính năng · Bản demo vòng loại - Dữ liệu mô phỏng AI');
+        await wait(4200);
         return { ok: true, ms: Date.now() - t0 };
       } catch (err) {
         var m = err && err.message;
@@ -720,8 +891,7 @@
         running = false;
         document.body.classList.remove('demo-running');
         dom.demoBtn.disabled = false;
-        if (dom.cap.parentNode !== document.body) document.body.appendChild(dom.cap);
-        dom.cap.hidden = true;
+        [dom.cap, dom.cursor].forEach(function (n) { if (n.parentNode !== document.body) document.body.appendChild(n); n.hidden = true; });
       }
     }
     return {
@@ -733,49 +903,22 @@
 
   /* ---------------- Khởi tạo ---------------- */
   function cacheDom() {
-    dom.viewChat = $('#view-chat');
-    dom.viewAdmin = $('#view-admin');
-    dom.log = $('#chat-log');
-    dom.composer = $('#composer');
-    dom.input = $('#msg-input');
+    var ids = {
+      viewChat: 'view-chat', viewAdmin: 'view-admin', log: 'chat-log', composer: 'composer', input: 'msg-input', counter: 'msg-counter',
+      send: 'send-btn', hint: 'composer-hint', topics: 'topic-list', navCount: 'nav-admin-count', demoBtn: 'btn-demo', toast: 'toast',
+      cap: 'demo-caption', capStep: 'cap-step', capText: 'cap-text', cursor: 'demo-cursor',
+      bkDialog: 'booking-dialog', bkForm: 'booking-form', bkName: 'bk-name', bkPhone: 'bk-phone', bkDate: 'bk-date', bkTime: 'bk-time',
+      bkNote: 'bk-note', bkSubmit: 'bk-submit', noteCount: 'note-count', slotHint: 'slot-hint', errForm: 'err-form',
+      cDialog: 'confirm-dialog', cMsg: 'confirm-msg', cOk: 'confirm-ok',
+      mineDialog: 'mine-dialog', mineList: 'mine-list', mineBtn: 'btn-mine', mineCount: 'mine-count', aboutDialog: 'about-dialog',
+      stTotal: 'st-total', stPending: 'st-pending', stToday: 'st-today', stUnanswered: 'st-unanswered', search: 'adm-search', list: 'adm-list',
+      clearDone: 'adm-clear-done', clearDoneCount: 'adm-clear-done-count', logPanel: 'adm-log-panel', logList: 'adm-unanswered',
+      logCount: 'adm-unanswered-count', clearLog: 'adm-clear-log', storageNote: 'adm-storage-note',
+      insQuestions: 'ins-questions', insAnswered: 'ins-answered', insAnsweredSub: 'ins-answered-sub', insFallback: 'ins-fallback',
+      insBookings: 'ins-bookings', insSince: 'ins-since', insRank: 'ins-rank'
+    };
+    Object.keys(ids).forEach(function (k) { dom[k] = document.getElementById(ids[k]); });
     dom.inputWrap = $('#composer .composer-field');
-    dom.counter = $('#msg-counter');
-    dom.send = $('#send-btn');
-    dom.hint = $('#composer-hint');
-    dom.topics = $('#topic-list');
-    dom.navCount = $('#nav-admin-count');
-    dom.demoBtn = $('#btn-demo');
-    dom.toast = $('#toast');
-    dom.cap = $('#demo-caption');
-    dom.capStep = $('#cap-step');
-    dom.capText = $('#cap-text');
-    dom.bkDialog = $('#booking-dialog');
-    dom.bkForm = $('#booking-form');
-    dom.bkName = $('#bk-name');
-    dom.bkPhone = $('#bk-phone');
-    dom.bkDate = $('#bk-date');
-    dom.bkTime = $('#bk-time');
-    dom.bkNote = $('#bk-note');
-    dom.bkSubmit = $('#bk-submit');
-    dom.noteCount = $('#note-count');
-    dom.slotHint = $('#slot-hint');
-    dom.errForm = $('#err-form');
-    dom.cDialog = $('#confirm-dialog');
-    dom.cMsg = $('#confirm-msg');
-    dom.cOk = $('#confirm-ok');
-    dom.stTotal = $('#st-total');
-    dom.stPending = $('#st-pending');
-    dom.stToday = $('#st-today');
-    dom.stUnanswered = $('#st-unanswered');
-    dom.search = $('#adm-search');
-    dom.list = $('#adm-list');
-    dom.clearDone = $('#adm-clear-done');
-    dom.clearDoneCount = $('#adm-clear-done-count');
-    dom.logPanel = $('#adm-log-panel');
-    dom.logList = $('#adm-unanswered');
-    dom.logCount = $('#adm-unanswered-count');
-    dom.clearLog = $('#adm-clear-log');
-    dom.storageNote = $('#adm-storage-note');
   }
 
   function bindEvents() {
@@ -784,8 +927,13 @@
     $('#btn-new-chat').addEventListener('click', function () { if (!busy) resetChat(); });
     $('#btn-book-top').addEventListener('click', function () { openBooking({ source: 'direct' }); });
     $('#sidebar-book').addEventListener('click', function () { openBooking({ source: 'direct' }); });
+    $('#btn-about').addEventListener('click', openAbout);
+    $('#about-demo').addEventListener('click', function () { closeDialog(dom.aboutDialog); Demo.run(); });
     dom.demoBtn.addEventListener('click', function () { Demo.run(); });
     $('#cap-stop').addEventListener('click', function () { Demo.stop(); });
+    dom.mineBtn.addEventListener('click', openMine);
+    dom.mineList.addEventListener('click', onMineClick);
+    $('#mine-new').addEventListener('click', function () { openBooking({ source: 'direct' }); });
 
     dom.bkForm.addEventListener('submit', onSubmitBooking);
     dom.bkDate.addEventListener('change', function () { refreshSlots(true); });
@@ -793,8 +941,10 @@
     dom.bkName.addEventListener('input', function () { setFieldError('name', ''); });
     dom.bkPhone.addEventListener('input', function () { setFieldError('phone', ''); });
     dom.bkNote.addEventListener('input', function () { updateNoteCount(); setFieldError('note', ''); });
-    $all('[data-close]', dom.bkDialog).forEach(function (b) { b.addEventListener('click', function () { closeDialog(dom.bkDialog); }); });
-    dom.bkDialog.addEventListener('click', function (e) { if (e.target === dom.bkDialog && !Demo.running()) closeDialog(dom.bkDialog); });
+    [dom.bkDialog, dom.mineDialog, dom.aboutDialog].forEach(function (d) {
+      $all('[data-close]', d).forEach(function (b) { b.addEventListener('click', function () { closeDialog(d); }); });
+      d.addEventListener('click', function (e) { if (e.target === d && !Demo.running()) closeDialog(d); }); // bấm ra ngoài để đóng
+    });
     dom.bkDialog.addEventListener('close', function () { saving = false; dom.bkSubmit.disabled = false; });
 
     dom.search.addEventListener('input', renderAdmin);
@@ -803,12 +953,13 @@
     });
     dom.list.addEventListener('click', onAdminListClick);
     dom.clearDone.addEventListener('click', function () {
-      var n = B.loadAppointments().list.filter(function (r) { return r.status === 'done'; }).length;
+      var n = B.loadAppointments().list.filter(B.isClosed).length;
       if (!n) return;
-      confirmDialog('Xóa ' + n + ' lịch hẹn đã xử lý? Thao tác không thể hoàn tác.', 'Xóa ' + n + ' lịch').then(function (ok) {
+      confirmDialog('Xóa ' + n + ' lịch hẹn đã xử lý xong (đã gọi lại hoặc khách đã hủy)? Thao tác không thể hoàn tác.', 'Xóa ' + n + ' lịch').then(function (ok) {
         if (!ok) return;
         var k = B.removeDone();
         renderAdmin();
+        refreshMine();
         toast('Đã xóa ' + k + ' lịch hẹn đã xử lý.', 'success');
       });
     });
@@ -827,11 +978,12 @@
       });
     });
     $('#adm-reset').addEventListener('click', function () {
-      confirmDialog('Đặt lại TOÀN BỘ dữ liệu demo (lịch hẹn + nhật ký) trên trình duyệt này?', 'Đặt lại').then(function (ok) {
+      confirmDialog('Đặt lại TOÀN BỘ dữ liệu demo (lịch hẹn, nhật ký, số liệu, cuộc trò chuyện) trên trình duyệt này?', 'Đặt lại').then(function (ok) {
         if (!ok) return;
         B.clearAll();
         resetChat();
         renderAdmin();
+        refreshMine();
         toast('Đã đặt lại dữ liệu demo.', 'success');
       });
     });
@@ -840,8 +992,10 @@
     window.addEventListener('storage', function (e) { // đồng bộ khi khách đặt lịch ở tab khác
       if (e.key && e.key.indexOf('vibe4.') !== 0) return;
       refreshBadges();
+      refreshMine();
       if (currentView() === 'admin') renderAdmin();
       if (dom.bkDialog.open) refreshSlots(false);
+      if (dom.mineDialog.open) renderMine();
     });
   }
 
@@ -866,14 +1020,17 @@
       toast('Dữ liệu lịch hẹn trong trình duyệt bị lỗi định dạng nên đã được khởi tạo lại (bản lỗi đã được sao lưu).', 'warn', 6000);
     }
     updateCounter();
-    resetChat();
+    if (!restoreChat()) resetChat();
     route();
     refreshBadges(loaded.list);
+    refreshMine();
     // Móc nhỏ phục vụ kiểm thử tự động (E2E) — không ảnh hưởng người dùng
     window.VCApp = {
       demo: Demo,
       send: send,
       openBooking: openBooking,
+      openMine: openMine,
+      openAbout: openAbout,
       resetChat: resetChat,
       renderAdmin: renderAdmin,
       lastBookedId: function () { return lastBookedId; },

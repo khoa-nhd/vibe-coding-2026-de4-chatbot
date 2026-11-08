@@ -98,7 +98,11 @@ var CASES = [
   ['chuyển tên miền .vn sang được không', 'chuyen-nha-cung-cap'],   // trước: nhầm sang FAQ 2 (.vn hay .com)
   ['hoàn tiền mất bao lâu', 'thanh-toan-gia-han'],                  // trước: nhầm sang FAQ 6 (trỏ tên miền)
   ['giá tên miền .vn bao nhiêu', 'vn-hay-com'],
-  ['tro domain mat bao lau', 'tro-ten-mien']
+  ['tro domain mat bao lau', 'tro-ten-mien'],
+  // Hồi quy vòng 6 (rà soát theo tiêu chí)
+  ['tên miền .com giá bao nhiêu', 'vn-hay-com'],                   // trước: chuyển sang đặt lịch (bỏ nhầm từ khóa ở vòng 3)
+  ['bảo mật dữ liệu khách hàng thế nào', 'ssl-mien-phi'],          // trước: nhầm FAQ 8 vì "bảo mật dữ liệu" bỏ dấu chứa "mất dữ liệu"
+  ['lỡ làm mất dữ liệu web', 'sao-luu']
 ];
 CASES.forEach(function (c) { check('match', '"' + c[0] + '" → ' + c[1], bestId(c[0]) === c[1], describe(c[0])); });
 VC.FAQ.forEach(function (f) {
@@ -168,11 +172,12 @@ OOS.forEach(function (q) {
   var r1 = bot.reply('Có SSL miễn phí không?');
   var r2 = bot.reply('ssl co mien phi khong');
   check('mock', 'trả lời được đánh dấu mock + có câu gốc', r1.mock === true && r1.original === VC.FAQ[4].answer.replace(/\{brand\}/g, 'VibeHost'));
-  check('mock', 'hỏi lại → dùng bản diễn đạt khác', r1.paragraphs[1] !== r2.paragraphs[1] && r2.variant === 2, r1.variant + '/' + r2.variant);
+  check('mock', 'hỏi lại → dùng bản diễn đạt khác', r1.body !== r2.body && r2.variant === 2, r1.variant + '/' + r2.variant);
   check('mock', 'hỏi lại → câu mở đầu báo diễn đạt lại', /cách khác/.test(r2.paragraphs[0]), r2.paragraphs[0]);
+  check('mock', 'không còn câu xã giao vô nghĩa ("Câu hỏi rất hay")', !/rất hay/.test(JSON.stringify(r1)));
   var shop = VC.createBot();
   var s = shop.reply('Shop thời trang của mình nên dùng gói hosting nào?');
-  check('mock', 'cá nhân hóa ngữ cảnh "shop"', /shop của bạn/.test(s.paragraphs[1]), s.paragraphs[1].slice(0, 80));
+  check('mock', 'cá nhân hóa ngữ cảnh "shop"', /shop của bạn/.test(s.body), s.body.slice(0, 80));
   var all = JSON.stringify([r1, r2, s, bot.welcome(), shop.reply('xin chào'), shop.reply('logo')]);
   check('mock', 'không còn placeholder {brand}/{target}/{bot}', !/\{(brand|target|bot)\}/.test(all));
   check('mock', 'gói hosting/khuyến nghị có nút đặt lịch (CTA)', s.actions.length === 1 && s.actions[0].type === 'booking');
@@ -185,11 +190,51 @@ OOS.forEach(function (q) {
     VC.FAQ.forEach(function (f) {
       [1, 2].forEach(function () {
         var r = b.reply(f.question);
-        if (/của (shop|website|trang)[^.!?]{0,30} của bạn/.test(r.paragraphs.join(' '))) bad.push((ctx || 'mặc định') + ' / FAQ ' + f.no + ' / mẫu ' + r.variant);
+        if (/của (shop|website|trang)[^.!?]{0,30} của bạn/.test((r.lead || '') + ' ' + r.paragraphs.join(' '))) bad.push((ctx || 'mặc định') + ' / FAQ ' + f.no + ' / mẫu ' + r.variant);
       });
     });
   });
   check('mock', 'không lặp "của … của bạn" ở mọi ngữ cảnh và mọi mẫu câu', bad.length === 0, bad.join('; '));
+})();
+
+/* ---------------- 5b. Mock "bám ý hỏi": câu trả lời trọng tâm theo đúng ý con khách hỏi ---------------- */
+(function () {
+  VC.FAQ.forEach(function (f) {
+    (f.focus || []).forEach(function (fc, i) {
+      check('focus', 'FAQ ' + f.no + ' ý ' + (i + 1) + ' đủ nhãn, từ khóa, nội dung', !!fc.label && fc.keys.length > 0 && fc.text.length > 20);
+    });
+  });
+  var FOCUS = [
+    ['giá tên miền .vn bao nhiêu', 'vn-hay-com', /650\.000đ/],
+    ['Tên miền .vn có tốt cho SEO không?', 'vn-hay-com', /Google/],
+    ['công ty đăng ký tên miền .vn cần giấy tờ gì', 'giay-to-vn', /mã số thuế/],
+    ['shop nhỏ thuê gói hosting nào rẻ nhất', 'chon-goi-hosting', /Khởi Nghiệp 39\.000đ/],
+    ['nâng cấp gói hosting có mất dữ liệu không', 'chon-goi-hosting', /không mất dữ liệu/],
+    ['ssl hết hạn thì sao', 'ssl-mien-phi', /tự gia hạn/],
+    ['web bị báo không bảo mật', 'ssl-mien-phi', /http:\/\//],
+    ['đã trỏ dns mà web vẫn chưa vào được', 'tro-ten-mien', /24–48 giờ/],
+    ['tạo được bao nhiêu email theo tên miền', 'email-ten-mien', /Khởi Nghiệp 3/],
+    ['lỡ xóa nhầm dữ liệu website', 'sao-luu', /bản sao lưu gần nhất/],
+    ['mã EPP lấy ở đâu', 'chuyen-nha-cung-cap', /EPP\/Auth code/],
+    ['chuyển tên miền .vn sang được không', 'chuyen-nha-cung-cap', /VNNIC/],
+    ['hoàn tiền mất bao lâu', 'thanh-toan-gia-han', /hoàn trong 7 ngày đầu/],
+    ['gia hạn tên miền .vn', 'thanh-toan-gia-han', /trước 30, 15 và 7 ngày/]
+  ];
+  FOCUS.forEach(function (c) {
+    var r = VC.createBot().reply(c[0]);
+    check('focus', '"' + c[0] + '" → ' + c[1] + ' + câu trọng tâm đúng ý', r.type === 'answer' && r.faqId === c[1] && c[2].test(r.lead || ''),
+      (r.faqId || r.type) + ' | ' + (r.lead || 'không có câu trọng tâm'));
+  });
+  var plain = VC.createBot().reply('transfer tên miền');
+  check('focus', 'câu không nhắc ý con → không chèn câu trọng tâm', plain.type === 'answer' && plain.lead === null, plain.lead);
+  var chipRes = VC.createBot().reply('Bảng giá hosting, chọn gói nào?', { faqId: 'chon-goi-hosting' });
+  check('focus', 'bấm chip → trả lời đầy đủ, không chèn câu trọng tâm', chipRes.lead === null);
+  var again = VC.createBot();
+  again.reply('Nên chọn tên miền .vn hay .com?');
+  var priced = again.reply('ten mien .com gia bao nhieu');
+  check('focus', 'hỏi tiếp ý mới cùng chủ đề → không chèn câu "nói lại theo cách khác"', !!priced.lead && priced.paragraphs.length === 1 && priced.variant === 2, JSON.stringify(priced.paragraphs));
+  var hold = VC.createBot().reply('gia han ten mien vn');
+  check('match', 'hòa điểm → ưu tiên FAQ khớp nhiều chữ hơn ("gia han" thắng "vn")', hold.faqId === 'thanh-toan-gia-han', hold.faqId);
 })();
 
 /* ---------------- 6. Ý định hội thoại ---------------- */
@@ -319,6 +364,36 @@ var NOW = { date: '2026-11-10', minutes: 9 * 60 + 10 }; // Thứ Ba 10/11/2026 l
   check('csv', 'escape dấu phẩy & nháy kép', csv.indexOf('"Lan, ""Bé"""') > -1);
   check('csv', 'chặn chèn công thức Excel', csv.indexOf('"\'=HYPERLINK') > -1);
   check('csv', 'giờ tạo theo giờ VN', csv.indexOf('20:00 08/11/2026') > -1);
+
+  /* Trạng thái "khách đã hủy", "Lịch hẹn của bạn", số liệu hiệu quả chatbot */
+  B.clearAll();
+  var m1 = B.add({ name: 'Nguyễn Thị Lan', phone: '0912345678', date: '2026-11-11', time: '09:00' }, { now: NOW, source: 'chat-fallback', mine: true });
+  check('mine', 'đặt từ phía khách → xuất hiện trong "Lịch hẹn của bạn"', m1.ok && B.listMine().length === 1 && B.listMine()[0].id === m1.record.id);
+  var c1 = B.cancelMine(m1.record.id);
+  check('mine', 'khách hủy lịch đang chờ → trạng thái "Khách đã hủy"', c1.ok && B.getById(m1.record.id).status === 'cancelled' && B.STATUS_LABEL.cancelled === 'Khách đã hủy');
+  check('mine', 'hủy lần 2 → báo không hủy được', B.cancelMine(m1.record.id).ok === false);
+  check('mine', 'lịch đã hủy không giữ chỗ → khung 09:00 trống lại', B.getSlots('2026-11-11', B.loadAppointments().list, NOW).filter(function (s) { return s.time === '09:00'; })[0].available);
+  check('mine', 'lịch đã hủy không chặn đặt lại cùng SĐT trong ngày', B.add({ name: 'Nguyễn Thị Lan', phone: '0912345678', date: '2026-11-11', time: '09:30' }, { now: NOW, mine: true }).ok);
+  var other = B.add({ name: 'Trần Văn B', phone: '0987654321', date: '2026-11-12', time: '10:00' }, { now: NOW, source: 'direct' });
+  check('mine', 'không hủy được lịch không phải của mình', B.cancelMine(other.record.id).ok === false && B.listMine().length === 2);
+  B.setStatus(other.record.id, 'done');
+  check('mine', '"Xóa lịch đã xử lý" xóa cả lịch đã xong và lịch khách đã hủy', B.removeDone() === 2 && B.loadAppointments().list.length === 1);
+  B.store.set(B.KEYS.appts, JSON.stringify([{ id: 'z1', name: 'Lan', phone: '0912345678', date: '2026-11-11', time: '09:00', status: 'abc' }]));
+  check('store', 'trạng thái lạ (sửa tay) → coi là "Chờ xử lý"', B.loadAppointments().list[0].status === 'pending');
+
+  B.clearAll();
+  B.track({ type: 'answer', faqId: 'vn-hay-com' });
+  B.track({ type: 'answer', faqId: 'vn-hay-com' });
+  B.track({ type: 'fallback' });
+  B.track({ type: 'other' });
+  B.add({ name: 'Lê Văn C', phone: '0901234567', date: '2026-11-13', time: '10:00' }, { now: NOW, source: 'chat-fallback' });
+  B.add({ name: 'Lê Văn D', phone: '0901234568', date: '2026-11-13', time: '10:30' }, { now: NOW, source: 'direct' });
+  var st = B.getStats();
+  check('stats', 'đếm câu hỏi: 4 câu, bot tự trả lời 2, chuyển nhân viên 1', st.questions === 4 && st.answered === 2 && st.fallback === 1 && st.other === 1, JSON.stringify(st));
+  check('stats', 'đếm theo chủ đề + chỉ tính lịch hẹn tạo từ chatbot', st.byFaq['vn-hay-com'] === 2 && st.bookings === 1, JSON.stringify(st));
+  B.store.set(B.KEYS.stats, '{hong');
+  check('stats', 'số liệu hỏng → khởi tạo lại, không crash', B.getStats().questions === 0);
+  B.clearAll();
 
   check('date', 'ngày trống gần nhất từ thứ Bảy 17:00 → thứ Hai', B.nextAvailableDate([], { date: '2026-11-14', minutes: 17 * 60 }) === '2026-11-16');
   check('date', 'ngày trống gần nhất hôm nay còn slot → hôm nay', B.nextAvailableDate([], NOW) === '2026-11-10');

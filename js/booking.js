@@ -22,7 +22,14 @@
     noteMax: 200,
     unansweredMax: 50
   };
-  var KEYS = { appts: 'vibe4.appointments.v1', unanswered: 'vibe4.unanswered.v1' };
+  var KEYS = {
+    appts: 'vibe4.appointments.v1',     // danh sách lịch hẹn (dùng chung cho khách và quản trị trong bản demo)
+    unanswered: 'vibe4.unanswered.v1',  // câu hỏi bot chưa trả lời được
+    mine: 'vibe4.mine.v1',              // mã các lịch hẹn khách đã đặt từ trình duyệt này ("Lịch hẹn của bạn")
+    stats: 'vibe4.stats.v1'             // số liệu hiệu quả chatbot (đếm thật từ các cuộc trò chuyện)
+  };
+  // Trạng thái lịch hẹn: pending = chờ nhân viên gọi lại · done = nhân viên đã xử lý · cancelled = khách tự hủy
+  var STATUSES = ['pending', 'done', 'cancelled'];
   var WEEKDAYS = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 
   /* ---------------- Lưu trữ an toàn ---------------- */
@@ -133,9 +140,9 @@
     });
     return out;
   }
-  function countAt(list, date, time) {
+  function countAt(list, date, time) { // lịch đã hủy không giữ chỗ
     var n = 0;
-    (list || []).forEach(function (r) { if (r.date === date && r.time === time) n++; });
+    (list || []).forEach(function (r) { if (r.date === date && r.time === time && r.status !== 'cancelled') n++; });
     return n;
   }
   function getSlots(date, list, now) {
@@ -234,7 +241,7 @@
     if (note.length > CONFIG.noteMax) errors.note = 'Nội dung tối đa 200 ký tự.'; else value.note = note;
     if (value.phone && value.date) {
       var dup = null;
-      list.forEach(function (x) { if (x.phone === value.phone && x.date === value.date && x.status !== 'done') dup = x; });
+      list.forEach(function (x) { if (x.phone === value.phone && x.date === value.date && (x.status || 'pending') === 'pending') dup = x; });
       if (dup) errors.phone = 'Số này đã có lịch hẹn ' + formatShortDate(dup.date) + ' lúc ' + dup.time + ' đang chờ xử lý. Nhân viên sẽ liên hệ theo lịch đó.';
     }
     return { ok: Object.keys(errors).length === 0, errors: errors, value: value };
@@ -259,7 +266,13 @@
   }
   function loadAppointments() {
     var r = readList(KEYS.appts, isValidAppt);
-    r.list = sortAppts(r.list);
+    r.list = sortAppts(r.list.map(function (x) { // trạng thái lạ (dữ liệu sửa tay) → coi là chờ xử lý
+      if (STATUSES.indexOf(x.status) > -1) return x;
+      var copy = {};
+      Object.keys(x).forEach(function (k) { copy[k] = x[k]; });
+      copy.status = 'pending';
+      return copy;
+    }));
     return r;
   }
 
@@ -288,6 +301,8 @@
     }
     var saved = loadAppointments().list.some(function (x) { return x.id === rec.id; }); // đọc lại để xác nhận đã lưu thật
     if (!saved) return { ok: false, errors: { _form: 'Không xác nhận được dữ liệu đã lưu. Vui lòng thử lại.' }, value: v.value };
+    if (opts.mine) rememberMine(rec.id);
+    if (String(rec.source).indexOf('chat') === 0) track({ type: 'booking' });
     return { ok: true, record: rec, errors: {}, value: v.value };
   }
 
@@ -305,7 +320,7 @@
         found = true;
         var copy = {};
         Object.keys(r).forEach(function (k) { copy[k] = r[k]; });
-        copy.status = status === 'done' ? 'done' : 'pending';
+        copy.status = STATUSES.indexOf(status) > -1 ? status : 'pending';
         copy.updatedAt = new Date().toISOString();
         return copy;
       });
@@ -319,13 +334,69 @@
     });
     return removed;
   }
+  function isClosed(r) { return r.status === 'done' || r.status === 'cancelled'; } // đã xử lý xong (gọi lại xong hoặc khách đã hủy)
   function removeDone() {
     var removed = 0;
     update(function (list) {
-      return list.filter(function (r) { if (r.status === 'done') { removed++; return false; } return true; });
+      return list.filter(function (r) { if (isClosed(r)) { removed++; return false; } return true; });
     });
     return removed;
   }
+
+  /* ---------------- "Lịch hẹn của bạn" (phía khách) ---------------- */
+  function readIds() {
+    return readList(KEYS.mine, function (x) { return typeof x === 'string' && x.length > 0; }).list;
+  }
+  function rememberMine(id) {
+    var ids = readIds().filter(function (x) { return x !== id; });
+    ids.unshift(id);
+    try { writeList(KEYS.mine, ids.slice(0, 20)); } catch (e) { /* bỏ qua: chỉ là tiện ích xem lại */ }
+  }
+  function listMine() {
+    var ids = readIds();
+    var all = loadAppointments().list;
+    return ids.map(function (id) {
+      var found = null;
+      all.forEach(function (r) { if (r.id === id) found = r; });
+      return found;
+    }).filter(Boolean);
+  }
+  function cancelMine(id) { // khách chỉ hủy được lịch của mình và lịch còn đang chờ
+    if (readIds().indexOf(id) === -1) return { ok: false, error: 'Không tìm thấy lịch hẹn của bạn.' };
+    var rec = getById(id);
+    if (!rec) return { ok: false, error: 'Lịch hẹn không còn trong hệ thống (có thể nhân viên đã xử lý và xóa).' };
+    if (rec.status !== 'pending') return { ok: false, error: 'Lịch này đã được xử lý nên không hủy được.' };
+    setStatus(id, 'cancelled');
+    return { ok: true, record: getById(id) };
+  }
+
+  /* ---------------- Số liệu hiệu quả chatbot (đếm thật trên trình duyệt này) ---------------- */
+  function emptyStats() { return { since: new Date().toISOString(), questions: 0, answered: 0, fallback: 0, other: 0, bookings: 0, byFaq: {} }; }
+  function getStats() {
+    var raw = store.get(KEYS.stats);
+    if (!raw) return emptyStats();
+    try {
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== 'object' || typeof s.questions !== 'number') throw new Error('bad');
+      var base = emptyStats();
+      Object.keys(base).forEach(function (k) { if (s[k] === undefined) s[k] = base[k]; });
+      if (!s.byFaq || typeof s.byFaq !== 'object') s.byFaq = {};
+      return s;
+    } catch (e) {
+      store.remove(KEYS.stats);
+      return emptyStats();
+    }
+  }
+  function track(ev) {
+    var s = getStats();
+    if (ev.type === 'answer') { s.questions++; s.answered++; s.byFaq[ev.faqId] = (s.byFaq[ev.faqId] || 0) + 1; }
+    else if (ev.type === 'fallback') { s.questions++; s.fallback++; }
+    else if (ev.type === 'other') { s.questions++; s.other++; }
+    else if (ev.type === 'booking') { s.bookings++; }
+    try { store.set(KEYS.stats, JSON.stringify(s)); } catch (e) { /* bỏ qua */ }
+    return s;
+  }
+  function clearStats() { store.remove(KEYS.stats); }
   function getById(id) {
     var found = null;
     loadAppointments().list.forEach(function (r) { if (r.id === id) found = r; });
@@ -333,9 +404,9 @@
   }
 
   var SAMPLE_PEOPLE = [
-    { name: 'Trần Văn An', phone: '0900000101', note: 'Muốn chuyển website từ nhà cung cấp cũ sang (dữ liệu mẫu).', status: 'pending' },
-    { name: 'Lê Thu Hà', phone: '0900000202', note: 'Hỏi về xuất hóa đơn VAT cho công ty (dữ liệu mẫu).', status: 'done' },
-    { name: 'Phạm Quốc Bảo', phone: '0900000303', note: 'Tư vấn gói hosting cho shop mỹ phẩm (dữ liệu mẫu).', status: 'pending' }
+    { name: 'Trần Văn An', phone: '0900000101', note: 'Muốn chuyển website từ nhà cung cấp cũ sang.', status: 'pending' },
+    { name: 'Lê Thu Hà', phone: '0900000202', note: 'Hỏi về xuất hóa đơn VAT cho công ty.', status: 'done' },
+    { name: 'Phạm Quốc Bảo', phone: '0900000303', note: 'Tư vấn gói hosting cho shop mỹ phẩm.', status: 'pending' }
   ];
   function seedSamples(now) {
     now = now || vnNow();
@@ -387,13 +458,13 @@
     p = String(p || '');
     return p.length >= 8 ? p.slice(0, 4) + ' ••• ' + p.slice(-3) : p;
   }
-  var STATUS_LABEL = { pending: 'Chờ xử lý', done: 'Đã xử lý' };
+  var STATUS_LABEL = { pending: 'Chờ xử lý', done: 'Đã xử lý', cancelled: 'Khách đã hủy' };
   var SOURCE_LABEL = {
     'chat-fallback': 'Chatbot – câu hỏi ngoài bộ kiến thức',
     'chat-intent': 'Chatbot – khách yêu cầu gặp nhân viên',
     'chat-cta': 'Chatbot – sau khi xem câu trả lời',
     direct: 'Nút “Đặt lịch” trên đầu trang',
-    sample: 'Dữ liệu mẫu (nút “Thêm dữ liệu mẫu”)'
+    sample: 'Tạo bằng nút “Thêm dữ liệu mẫu”'
   };
   function csvCell(v) {
     var s = String(v == null ? '' : v);
@@ -439,7 +510,14 @@
     setStatus: setStatus,
     remove: remove,
     removeDone: removeDone,
+    isClosed: isClosed,
     getById: getById,
+    listMine: listMine,
+    cancelMine: cancelMine,
+    getStats: getStats,
+    track: track,
+    clearStats: clearStats,
+    STATUSES: STATUSES,
     seedSamples: seedSamples,
     codeOf: codeOf,
     listUnanswered: listUnanswered,

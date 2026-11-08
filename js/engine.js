@@ -45,13 +45,8 @@
   ];
   var DEFAULT_TARGET = 'website của bạn';
 
-  var OPENERS = ['Dạ, mình trả lời ngay nhé!', 'Câu hỏi rất hay ạ.', 'Mình giải thích ngắn gọn thế này:', 'Vâng, bạn tham khảo nhé:'];
+  // Khi khách hỏi lại cùng chủ đề, mock báo rõ là đang diễn đạt theo cách khác (không lặp nguyên văn)
   var REPEAT_OPENER = 'Mình nói lại theo cách khác cho dễ hình dung nhé:';
-  var CLOSERS = [
-    'Bạn muốn tìm hiểu thêm phần nào? Chọn một gợi ý bên dưới nhé.',
-    'Nếu cần tư vấn kỹ cho trường hợp riêng của bạn, cứ bấm “Đặt lịch tư vấn” nha.',
-    'Còn thắc mắc gì, bạn cứ hỏi tiếp mình nhé!'
-  ];
 
   /* ---------------- Chuẩn hóa tiếng Việt ---------------- */
   function normalize(text) {
@@ -181,9 +176,11 @@
           break; // mỗi từ khóa chỉ tính một lần
         }
       });
-      return { faq: e.faq, score: Math.round(score * 100) / 100, hits: hits };
+      var cover = covered.filter(Boolean).length;
+      return { faq: e.faq, score: Math.round(score * 100) / 100, hits: hits, cover: cover };
     });
-    ranked.sort(function (a, b) { return b.score - a.score; }); // sort ổn định: hòa điểm giữ thứ tự FAQ
+    // Hòa điểm → ưu tiên FAQ khớp được nhiều chữ của câu hỏi hơn (cụm "gia han" thắng chữ đơn "vn"); vẫn hòa thì giữ thứ tự FAQ
+    ranked.sort(function (a, b) { return (b.score - a.score) || (b.cover - a.cover); });
     var oos = (VC.OUT_OF_SCOPE || []).filter(function (p) { return containsPhrase(tokens, tokenize(p)); });
     var top = ranked[0] || null;
     var threshold = oos.length ? STRONG_THRESHOLD : ANSWER_THRESHOLD;
@@ -197,6 +194,17 @@
       oos: oos,
       threshold: threshold
     };
+  }
+
+  /* "Bám ý hỏi": nếu câu hỏi nhắc tới một ý con (giá, hết hạn, hoàn tiền...), mở đầu bằng câu trả lời trọng tâm cho ý đó */
+  function pickFocus(faq, tokens) {
+    var list = faq.focus || [];
+    for (var i = 0; i < list.length; i++) {
+      for (var k = 0; k < list[i].keys.length; k++) {
+        if (containsPhrase(tokens, tokenize(list[i].keys[k]))) return { index: i, key: list[i].keys[k], text: list[i].text, label: list[i].label };
+      }
+    }
+    return null;
   }
 
   function detectTarget(tokens) {
@@ -252,14 +260,15 @@
       return out.map(function (id) { return { id: id, text: idx.byId[id].chip || idx.byId[id].question }; });
     }
 
-    function answerFaq(faq, info, matchedBy) {
+    function answerFaq(faq, info, matchedBy, tokens) {
       var count = state.counts[faq.id] || 0;
       var variant = faq.natural[count % faq.natural.length];
-      var opener = count > 0 ? REPEAT_OPENER : OPENERS[state.turn % OPENERS.length];
-      var closer = CLOSERS[state.turn % CLOSERS.length];
+      var focus = tokens ? pickFocus(faq, tokens) : null;
       state.counts[faq.id] = count + 1;
       state.asked[faq.id] = true;
       state.fallbackStreak = 0;
+      // Có câu trọng tâm thì câu đó đã trả lời thẳng ý mới → không cần báo "nói lại theo cách khác"
+      var paragraphs = count > 0 && !focus ? [REPEAT_OPENER, fill(variant)] : [fill(variant)];
       return {
         type: 'answer',
         mock: true,
@@ -267,9 +276,11 @@
         faqNo: faq.no,
         category: faq.category,
         question: faq.question,
-        paragraphs: [fill(opener), fill(variant)],
+        lead: focus ? fill(focus.text) : null,
+        focus: focus ? { key: focus.key, label: focus.label } : null,
+        paragraphs: paragraphs,
+        body: fill(variant),
         bullets: faq.points.map(fill),
-        closing: fill(closer),
         original: fill(faq.answer),
         variant: (count % faq.natural.length) + 1,
         matchedBy: matchedBy,
@@ -288,7 +299,7 @@
       var reason = !hasTokens ? 'empty' : partial ? 'partial' : info.oos.length ? 'out-of-scope' : 'no-match';
       var paragraphs;
       if (!hasTokens) {
-        paragraphs = ['Mình chưa hiểu tin nhắn này 😅', 'Bạn thử hỏi về tên miền, hosting, SSL, email… hoặc **đặt lịch tư vấn** để gặp nhân viên nhé.'];
+        paragraphs = ['Mình chưa hiểu tin nhắn này.', 'Bạn thử hỏi về tên miền, hosting, SSL, email… hoặc **đặt lịch tư vấn** để gặp nhân viên nhé.'];
       } else if (partial) {
         paragraphs = [
           'Mình chưa tìm thấy câu trả lời thật chắc chắn cho câu này trong bộ kiến thức, nên không muốn trả lời đoán mò.',
@@ -350,7 +361,7 @@
           base.paragraphs = [fill('Cảm ơn bạn đã ghé {brand}! Chúc bạn một ngày thật nhiều đơn hàng. Khi cần, mình luôn ở đây 24/7 nhé.')];
           return base;
         default: // greeting
-          p = 'Chào bạn 👋 Mình là **{bot}**. Bạn cần hỏi gì về tên miền, hosting, SSL hay email theo tên miền? Chọn nhanh một câu bên dưới cũng được nhé.';
+          p = 'Chào bạn! Mình là **{bot}**. Bạn cần hỏi gì về tên miền, hosting, SSL hay email theo tên miền? Chọn nhanh một câu bên dưới cũng được nhé.';
           base.paragraphs = [fill(p)];
           base.intent = 'greeting';
           return base;
@@ -378,7 +389,7 @@
           state.fallbackStreak = 0;
           res = intentReply('booking');
         } else if (info.best) {
-          res = answerFaq(info.best.faq, { score: info.best.score, hits: info.best.hits, corrections: info.corrections }, 'keywords');
+          res = answerFaq(info.best.faq, { score: info.best.score, hits: info.best.hits, corrections: info.corrections }, 'keywords', info.tokens);
         } else if (hasAnyPhrase(info.tokens, I.hours || [])) {
           res = intentReply('hours');
         } else if (hasAnyPhrase(info.tokens, I.list || [])) {
@@ -407,7 +418,7 @@
       return {
         type: 'welcome',
         paragraphs: [
-          fill('Xin chào 👋 Mình là **{bot}** — trợ lý tư vấn tự động 24/7 của {brand}.'),
+          fill('Xin chào, mình là **{bot}** — trợ lý tư vấn tự động 24/7 của {brand}.'),
           'Mình trả lời ngay **10 câu hỏi thường gặp** về tên miền, hosting, SSL, email, thanh toán… Câu nào ngoài phạm vi, mình sẽ giúp bạn **đặt lịch** để nhân viên gọi lại tư vấn trực tiếp.'
         ],
         suggestions: suggestFor(null),
@@ -419,13 +430,24 @@
       return { type: 'system', paragraphs: paragraphs.map(fill), suggestions: suggestFor(null) };
     }
 
+    function setState(s) { // khôi phục cuộc trò chuyện sau khi tải lại trang
+      reset();
+      if (!s || typeof s !== 'object') return;
+      if (typeof s.turn === 'number') state.turn = s.turn;
+      if (s.asked && typeof s.asked === 'object') state.asked = s.asked;
+      if (s.counts && typeof s.counts === 'object') state.counts = s.counts;
+      if (typeof s.target === 'string') state.target = s.target;
+      if (typeof s.fallbackStreak === 'number') state.fallbackStreak = s.fallbackStreak;
+    }
+
     return {
       reply: reply,
       welcome: welcome,
       reset: reset,
       suggestFor: suggestFor,
       systemMessage: systemMessage,
-      getState: function () { return state; }
+      getState: function () { return state; },
+      setState: setState
     };
   }
 

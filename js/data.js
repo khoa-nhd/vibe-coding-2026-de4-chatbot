@@ -48,6 +48,12 @@
         'Hosting: nơi lưu mã nguồn, hình ảnh, dữ liệu; thuê theo tháng/năm.',
         'Website chạy được khi tên miền được trỏ về hosting.'
       ],
+      focus: [
+        { label: 'cần gì để có website', keys: ['can nhung gi', 'can gi', 'bat dau', 'lam website', 'lam web'],
+          text: 'Để có một website chạy được, bạn cần 3 thứ: **tên miền** (địa chỉ), **hosting** (nơi lưu) và **nội dung/mã nguồn** của website.' },
+        { label: 'khác nhau thế nào', keys: ['khac nhau', 'khac gi', 'phan biet', 'khac hosting', 'khac ten mien'],
+          text: 'Khác biệt cốt lõi: **tên miền là địa chỉ**, còn **hosting là nơi chứa** website.' }
+      ],
       related: ['vn-hay-com', 'chon-goi-hosting', 'tro-ten-mien']
     },
     {
@@ -59,7 +65,8 @@
       keywords: [
         'vn hay com', 'com hay vn', 'vn voi com', 'com voi vn', 'vn va com', 'com va vn', 'vn khac com', 'com khac vn',
         'nen chon ten mien', 'chon ten mien', 'chon duoi', 'duoi ten mien', 'duoi nao', 'duoi vn', 'duoi com',
-        'ten mien quoc gia', 'ten mien quoc te', 'loai ten mien', 'ten mien nao tot', 'vn', 'com', 'net'
+        'ten mien quoc gia', 'ten mien quoc te', 'loai ten mien', 'ten mien nao tot', 'gia ten mien', 'com gia', 'vn gia',
+        'gia com', 'gia vn', 'vn', 'com', 'net'
       ],
       answer:
         'Tên miền .vn là tên miền quốc gia Việt Nam do VNNIC quản lý, phù hợp khi khách hàng chủ yếu ở Việt Nam và tạo cảm giác tin cậy ' +
@@ -76,6 +83,14 @@
         '.vn: tên miền quốc gia (VNNIC quản lý), hợp với khách trong nước — giá mẫu 650.000đ năm đầu.',
         '.com: tên miền quốc tế, phổ biến — giá mẫu 320.000đ/năm.',
         'Mẹo: đăng ký cả hai để bảo vệ thương hiệu.'
+      ],
+      focus: [
+        { label: 'giá', keys: ['bao nhieu', 'chi phi', 'gia bao nhieu', 'gia ten mien', 'gia vn', 'gia com', 'gia domain', 're hon', 'dat hon', 'muc gia'],
+          text: 'Về chi phí (giá mẫu, chưa gồm VAT): **.vn 650.000đ năm đầu**, gia hạn 480.000đ/năm; **.com 320.000đ/năm**.' },
+        { label: 'SEO / tìm kiếm', keys: ['seo', 'google', 'tim kiem'],
+          text: 'Về tìm kiếm: tên miền quốc gia như **.vn** là tín hiệu cho Google biết website hướng tới người dùng Việt Nam; còn thứ hạng vẫn phụ thuộc chủ yếu vào nội dung và chất lượng website.' },
+        { label: 'đăng ký cả hai', keys: ['ca hai', 'dang ky ca', 'giu ca', 'mua ca'],
+          text: 'Nên giữ cả hai nếu ngân sách cho phép: trỏ chung về một website để khách gõ đuôi nào cũng vào đúng nơi.' }
       ],
       related: ['giay-to-vn', 'thanh-toan-gia-han', 'ten-mien-va-hosting']
     },
@@ -107,6 +122,12 @@
         'Cá nhân: họ tên, ngày sinh, số căn cước/CCCD, địa chỉ, email, số điện thoại.',
         'Tổ chức: tên tổ chức, mã số thuế, địa chỉ, người đại diện.',
         'Khai sai hoặc không xác định được chủ thể → có thể bị tạm ngừng/thu hồi (Nghị định 147/2024/NĐ-CP).'
+      ],
+      focus: [
+        { label: 'đứng tên công ty', keys: ['cong ty', 'doanh nghiep', 'to chuc', 'ma so thue', 'mst'],
+          text: 'Đứng tên **công ty**: cần tên tổ chức, **mã số thuế**, địa chỉ và thông tin người đại diện.' },
+        { label: 'đứng tên cá nhân', keys: ['ca nhan', 'cccd', 'can cuoc', 'cmnd'],
+          text: 'Đứng tên **cá nhân**: chỉ cần thông tin khớp với **căn cước/CCCD** (họ tên, ngày sinh, số định danh, địa chỉ) cùng email và số điện thoại.' }
       ],
       related: ['vn-hay-com', 'thanh-toan-gia-han', 'chuyen-nha-cung-cap']
     },
@@ -142,6 +163,18 @@
         'Giá mẫu, thanh toán theo năm, chưa gồm VAT.'
       ],
       cta: true,
+      focus: [
+        { label: 'gói rẻ nhất', keys: ['re nhat', 'gia re', 'tiet kiem', 'ngan sach', 'it tien', 'goi re'],
+          text: 'Nếu ưu tiên tiết kiệm: gói **Khởi Nghiệp 39.000đ/tháng** (giá mẫu) là rẻ nhất và đủ cho shop mới bắt đầu.' },
+        { label: 'nâng cấp / đổi gói', keys: ['nang cap', 'doi goi', 'chuyen goi', 'mat du lieu'],
+          text: 'Nâng cấp hoặc đổi gói lúc nào cũng được và **không mất dữ liệu**: website giữ nguyên, chỉ tăng thêm dung lượng và băng thông.' },
+        { label: 'nhiều website', keys: ['nhieu website', 'nhieu web', 'nhieu trang', 'nhieu shop'],
+          text: 'Nếu chạy nhiều website: gói **Doanh Nghiệp** cho tối đa 10 website (giá mẫu 159.000đ/tháng).' },
+        { label: 'đông khách / chạy quảng cáo', keys: ['quang cao', 'dong khach', 'nhieu khach', 'nhieu luot', 'luot truy cap'],
+          text: 'Nếu shop đã đông khách hoặc chạy quảng cáo: chọn gói **Kinh Doanh 79.000đ/tháng** để website nhanh và ổn định hơn.' },
+        { label: 'bảng giá', keys: ['bang gia', 'gia hosting', 'hosting gia', 'gia host', 'gia bao nhieu', 'bao nhieu', 'chi phi', 'muc gia'],
+          text: 'Bảng giá mẫu (thanh toán theo năm, chưa gồm VAT): **Khởi Nghiệp 39.000đ**, **Kinh Doanh 79.000đ**, **Doanh Nghiệp 159.000đ** mỗi tháng.' }
+      ],
       related: ['ssl-mien-phi', 'sao-luu', 'thanh-toan-gia-han']
     },
     {
@@ -152,7 +185,9 @@
       chip: 'Có SSL (HTTPS) miễn phí không?',
       keywords: [
         'ssl', 'https', 'chung chi', 'chung chi bao mat', 'khoa xanh', 'o khoa', 'khong an toan', 'khong bao mat', 'ma hoa',
-        'lets encrypt', 'let s encrypt', 'letsencrypt', 'encrypt', 'ssl mien phi', 'mien phi ssl', 'bao mat website', 'mien phi'
+        'lets encrypt', 'let s encrypt', 'letsencrypt', 'encrypt', 'ssl mien phi', 'mien phi ssl', 'bao mat website', 'mien phi',
+        'ssl het han', 'chung chi het han', 'ssl gia han', 'gia han ssl',
+        'bao mat du lieu', 'bao mat thong tin' // "bảo mật dữ liệu" bỏ dấu chứa cụm "mất dữ liệu" của FAQ 8 → cụm dài hơn thắng
       ],
       answer:
         'Có. Tất cả gói hosting của {brand} kèm chứng chỉ SSL miễn phí của Let’s Encrypt và được tự động gia hạn. SSL mã hóa dữ liệu giữa ' +
@@ -169,6 +204,14 @@
         'SSL Let’s Encrypt miễn phí ở mọi gói, tự động gia hạn.',
         'Website chạy https:// có biểu tượng ổ khóa, dữ liệu được mã hóa.',
         'Không có SSL: trình duyệt cảnh báo “Không bảo mật”.'
+      ],
+      focus: [
+        { label: 'SSL hết hạn', keys: ['het han', 'gia han'],
+          text: 'Bạn không cần tự gia hạn: chứng chỉ Let’s Encrypt được hệ thống **tự gia hạn** trước khi hết hạn.' },
+        { label: 'cảnh báo “Không bảo mật”', keys: ['khong bao mat', 'khong an toan', 'canh bao'],
+          text: 'Trình duyệt báo “Không bảo mật” nghĩa là website đang chạy **http://** chưa có SSL — bật SSL miễn phí cho tên miền là hết cảnh báo.' },
+        { label: 'cách bật SSL', keys: ['cai ssl', 'cai dat', 'kich hoat', 'bat ssl', 'lam sao'],
+          text: 'Cách bật: SSL được cài tự động khi tên miền đã trỏ đúng về hosting; bạn cũng có thể bấm cài lại trong trang quản lý hosting.' }
       ],
       related: ['tro-ten-mien', 'chon-goi-hosting', 'sao-luu']
     },
@@ -200,6 +243,14 @@
         'Cách 2: giữ DNS cũ, tạo bản ghi A trỏ về IP hosting.',
         'Hiệu lực: vài phút – vài giờ, tối đa 24–48 giờ (DNS propagation).'
       ],
+      focus: [
+        { label: 'đã trỏ nhưng chưa vào được', keys: ['chua vao duoc', 'chua truy cap duoc', 'chua hien', 'chua chay', 'khong vao duoc', 'van chua'],
+          text: 'Nếu đã trỏ mà chưa vào được: chờ tối đa **24–48 giờ** để DNS cập nhật; quá thời gian đó, hãy kiểm tra lại nameserver/bản ghi A hoặc đặt lịch để kỹ thuật kiểm tra giúp.' },
+        { label: 'thời gian hiệu lực', keys: ['bao lau', 'khi nao', 'mat bao lau'],
+          text: 'Thời gian hiệu lực: thường **vài phút đến vài giờ**, tối đa **24–48 giờ** để cập nhật trên toàn cầu.' },
+        { label: 'cách trỏ', keys: ['nameserver', 'name server', 'ban ghi a', 'a record', 'dns', 'the nao', 'lam sao', 'cach'],
+          text: 'Hai cách trỏ: đổi **nameserver** (khuyên dùng) hoặc giữ DNS cũ và tạo **bản ghi A** về IP của hosting.' }
+      ],
       related: ['ssl-mien-phi', 'email-ten-mien', 'ten-mien-va-hosting']
     },
     {
@@ -228,6 +279,14 @@
         'Dùng qua webmail, Outlook hoặc ứng dụng email trên điện thoại.',
         'Cần bản ghi MX đúng để gửi/nhận thư.'
       ],
+      focus: [
+        { label: 'số hộp thư', keys: ['bao nhieu', 'may hop thu', 'so luong', 'bao nhieu email', 'bao nhieu hop thu'],
+          text: 'Số hộp thư theo tên miền (dữ liệu mẫu): **Khởi Nghiệp 3**, **Kinh Doanh 10**, **Doanh Nghiệp 30**.' },
+        { label: 'dùng trên Outlook / điện thoại', keys: ['outlook', 'dien thoai', 'gmail', 'cai dat', 'cau hinh', 'app'],
+          text: 'Dùng trên Outlook hay điện thoại: thêm tài khoản email với thông số máy chủ có trong trang quản lý hosting; còn webmail dùng được ngay trên trình duyệt.' },
+        { label: 'bản ghi MX', keys: ['mx', 'ban ghi mx'],
+          text: 'Bản ghi **MX** cho biết thư gửi tới tên miền của bạn được chuyển về máy chủ nào; nếu trỏ nameserver về {brand}, MX được cấu hình tự động.' }
+      ],
       related: ['tro-ten-mien', 'chon-goi-hosting', 'ten-mien-va-hosting']
     },
     {
@@ -255,6 +314,12 @@
         'Khởi Nghiệp: sao lưu hằng tuần, giữ 4 bản.',
         'Kinh Doanh: hằng ngày, giữ 7 bản · Doanh Nghiệp: hằng ngày, giữ 14 bản.',
         'Tự khôi phục trong trang quản lý hoặc nhờ kỹ thuật hỗ trợ (chính sách mẫu).'
+      ],
+      focus: [
+        { label: 'lỡ xóa nhầm / khôi phục', keys: ['xoa nham', 'lo xoa', 'khoi phuc', 'restore', 'phuc hoi', 'quay lai'],
+          text: 'Lỡ xóa nhầm: vào trang quản lý hosting, chọn **bản sao lưu gần nhất** rồi bấm khôi phục, hoặc nhờ kỹ thuật làm giúp.' },
+        { label: 'tần suất sao lưu', keys: ['bao lau', 'bao nhieu ban', 'may ban', 'hang ngay', 'hang tuan', 'thuong xuyen'],
+          text: 'Tần suất (chính sách mẫu): **Khởi Nghiệp hằng tuần**, giữ 4 bản; **Kinh Doanh hằng ngày**, giữ 7 bản; **Doanh Nghiệp hằng ngày**, giữ 14 bản.' }
       ],
       related: ['chon-goi-hosting', 'chuyen-nha-cung-cap', 'ssl-mien-phi']
     },
@@ -287,6 +352,16 @@
         '.com: cần mã EPP/Auth code; thường chưa chuyển được trong 60 ngày sau khi đăng ký/chuyển (chính sách ICANN).',
         '.vn: đổi nhà đăng ký theo quy trình VNNIC, chủ tên miền xác nhận.'
       ],
+      focus: [
+        { label: 'mã EPP', keys: ['epp', 'ma epp', 'auth code', 'ma chuyen'],
+          text: 'Mã **EPP/Auth code** là mật mã để chuyển tên miền quốc tế; bạn lấy trong trang quản lý của nhà cung cấp cũ hoặc yêu cầu họ cấp.' },
+        { label: 'vừa đăng ký chưa lâu', keys: ['60 ngay', 'moi dang ky', 'vua dang ky', 'vua chuyen', 'moi mua', 'vua mua'],
+          text: 'Tên miền quốc tế vừa đăng ký hoặc vừa chuyển trong vòng **60 ngày** thường chưa chuyển được (chính sách ICANN hiện hành).' },
+        { label: 'tên miền .vn', keys: ['vn', 'ten mien vn'],
+          text: 'Với tên miền **.vn**: việc đổi nhà đăng ký làm theo quy trình của VNNIC và cần chủ tên miền xác nhận.' },
+        { label: 'website / hosting', keys: ['website', 'web', 'du lieu', 'hosting', 'host'],
+          text: 'Với **website/hosting**: kỹ thuật hỗ trợ chuyển dữ liệu miễn phí (dữ liệu mẫu), website gần như không bị gián đoạn.' }
+      ],
       related: ['tro-ten-mien', 'sao-luu', 'giay-to-vn']
     },
     {
@@ -318,6 +393,14 @@
         'Hoàn tiền hosting trong 7 ngày đầu; tên miền không hoàn sau khi đăng ký (chính sách mẫu).'
       ],
       cta: true,
+      focus: [
+        { label: 'hoàn tiền', keys: ['hoan tien', 'tra lai tien', 'lay lai tien', 'refund', 'huy dich vu'],
+          text: 'Về hoàn tiền (chính sách mẫu): hosting được **hoàn trong 7 ngày đầu** nếu chưa hài lòng; **tên miền không hoàn** sau khi đăng ký thành công.' },
+        { label: 'gia hạn / hết hạn', keys: ['gia han', 'het han', 'qua han', 'nhac gia han'],
+          text: 'Về gia hạn: hệ thống nhắc qua email/SMS **trước 30, 15 và 7 ngày**; quá hạn dịch vụ bị tạm ngưng, để lâu tên miền có thể bị thu hồi.' },
+        { label: 'hình thức thanh toán', keys: ['thanh toan', 'chuyen khoan', 'momo', 'zalopay', 'vnpay', 'qr', 'quet ma', 'the ngan hang', 'the tin dung', 'visa'],
+          text: 'Hình thức thanh toán (dữ liệu mẫu): **chuyển khoản, quét mã QR hoặc ví điện tử**.' }
+      ],
       related: ['chon-goi-hosting', 'vn-hay-com', 'chuyen-nha-cung-cap']
     }
   ];
