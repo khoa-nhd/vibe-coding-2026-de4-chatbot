@@ -12,7 +12,7 @@
 | Bảng thi | Bảng B - Kinh tế |
 | Đề bài bốc thăm | Đề số 4 — Chatbot FAQ & đặt lịch tư vấn |
 | Demo online | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/ (hoặc mở `index.html` từ source) |
-| Video demo (≤ 02 phút) | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html (khoảng 1 phút 30 giây) |
+| Video demo (≤ 02 phút) | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html (1 phút 32 giây) |
 | Source ZIP | https://github.com/khoa-nhd/vibe-coding-2026-de4-chatbot/releases/latest/download/Vibe_De4_ChatbotFAQ_source.zip |
 | Minh chứng dùng AI | Kèm trong ZIP: [`docs/MINH-CHUNG-AI.md`](docs/MINH-CHUNG-AI.md) |
 | Bảng kiểm thử | Kèm trong ZIP: [`docs/KIEM-THU.md`](docs/KIEM-THU.md) và mục 11 bên dưới |
@@ -216,7 +216,7 @@ Bảng B yêu cầu ít nhất 3 ca (bình thường, nhập thiếu/sai, ca bi�
 ## 12. Hồ sơ bàn giao
 
 - Source ZIP chứa mã nguồn và README này; không có cấu hình bí mật (không dùng khóa API).
-- Video khoảng 1 phút 30 giây (≤ 2 phút) thể hiện thao tác thực tế và đủ 5 tính năng:
+- Video 1 phút 32 giây (≤ 2 phút) thể hiện thao tác thực tế và đủ 5 tính năng:
   - Quay trực tiếp bản online; nút "Demo tự động 5 tính năng" thao tác lần lượt trên giao diện thật, có con trỏ minh họa.
   - Có khung tiêu đề ở đầu và tóm tắt 5 tính năng ở cuối.
   - Xem tại https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html.
