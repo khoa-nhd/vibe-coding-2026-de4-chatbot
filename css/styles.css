@@ -351,6 +351,9 @@ dialog .demo-caption { top: 12px; bottom: auto; } /* khi form đang mở: đưa 
 .demo-focus { outline: 3px solid #f59e0b !important; outline-offset: 3px; box-shadow: 0 0 0 7px rgba(245, 158, 11, .25) !important; }
 .demo-running .views { pointer-events: none; }
 .demo-running .toast { bottom: 160px; }
+@media (min-width: 561px) { /* khi demo chạy: hạ form xuống để chú thích phía trên không che tiêu đề */
+  .demo-running #booking-dialog { margin-top: 72px; max-height: calc(100vh - 88px); max-height: calc(100dvh - 88px); }
+}
 .noscript { padding: 16px; text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
