@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chatbot tư vấn · VibeHost — Đề 4 (bản demo vòng loại)</title>
+  <meta name="description" content="Chatbot FAQ & đặt lịch tư vấn (Đề 4 · VIBE-CODING 2026). Bản demo vòng loại - Dữ liệu mô phỏng AI.">
+  <meta name="theme-color" content="#1d4ed8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231d4ed8'/%3E%3Crect x='14' y='20' width='36' height='28' rx='9' fill='none' stroke='white' stroke-width='5'/%3E%3Ccircle cx='26' cy='34' r='4' fill='white'/%3E%3Ccircle cx='38' cy='34' r='4' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="demo-banner" role="note">
+      <strong>Bản demo vòng loại - Dữ liệu mô phỏng AI</strong>
+      <span class="hide-sm">· Doanh nghiệp <span data-brand>VibeHost</span>, giá &amp; chính sách đều là dữ liệu mẫu</span>
+      <span class="show-sm">· Giá &amp; chính sách là dữ liệu mẫu</span>
+    </div>
+    <div class="storage-warning" id="storage-warning" role="alert" hidden>
+      Trình duyệt đang chặn lưu trữ (localStorage): lịch hẹn chỉ được giữ tạm đến khi tải lại trang.
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="#/chat" aria-label="Về màn hình tư vấn">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22"><rect x="4" y="7" width="16" height="12" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9.5" cy="13" r="1.6" fill="currentColor"/><circle cx="14.5" cy="13" r="1.6" fill="currentColor"/><path d="M12 3.5V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand-text"><strong data-brand>VibeHost</strong><small>Trợ lý tư vấn tên miền &amp; hosting 24/7</small></span>
+      </a>
+      <nav class="tabs" aria-label="Chuyển màn hình">
+        <a href="#/chat" data-route="chat">Tư vấn</a>
+        <a href="#/admin" data-route="admin">Quản trị <span class="nav-count" id="nav-admin-count" hidden>0</span></a>
+      </nav>
+      <div class="top-actions">
+        <button type="button" class="btn ghost" id="btn-demo" title="Tự chạy lần lượt 5 tính năng của đề (dùng để quay video demo)">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>
+          <span>Demo<span class="hide-sm"> 5 tính năng</span></span>
+        </button>
+        <button type="button" class="btn primary" id="btn-book-top">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>Đặt lịch</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="views">
+      <!-- MÀN HÌNH KHÁCH HÀNG -->
+      <section class="view chat-view" id="view-chat" aria-label="Chatbot tư vấn">
+        <aside class="sidebar" aria-label="Bộ kiến thức">
+          <h2>10 câu hỏi thường gặp</h2>
+          <ol class="topic-list" id="topic-list"></ol>
+          <div class="info-card">
+            <strong>Giờ làm việc của nhân viên</strong>
+            <span data-hours></span>
+          </div>
+          <button type="button" class="btn primary block" id="sidebar-book">Đặt lịch tư vấn với nhân viên</button>
+          <p class="sidebar-note">Bộ kiến thức &amp; câu trả lời là dữ liệu mẫu. Phần diễn đạt do AI mô phỏng (mock) tạo từ câu trả lời gốc.</p>
+        </aside>
+
+        <div class="chat-panel">
+          <div class="chat-toolbar">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Trợ lý ảo · trả lời ngay 24/7</span>
+            <button type="button" class="link-btn" id="btn-new-chat">Cuộc trò chuyện mới</button>
+          </div>
+          <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="Nội dung trò chuyện"></div>
+          <form class="composer" id="composer" autocomplete="off">
+            <label class="sr-only" for="msg-input">Nhập câu hỏi</label>
+            <div class="composer-field">
+              <input id="msg-input" type="text" maxlength="300" enterkeyhint="send" placeholder="Hỏi về tên miền, hosting, email…">
+              <span class="counter" id="msg-counter" aria-hidden="true">0/300</span>
+            </div>
+            <button type="submit" class="send-btn" id="send-btn" aria-label="Gửi câu hỏi">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 20.5 21.5 12 3 3.5l.02 6.6L15 12 3.02 13.9z" fill="currentColor"/></svg>
+            </button>
+          </form>
+          <p class="composer-hint" id="composer-hint" aria-live="polite">Enter để gửi · Bot chỉ trả lời trong phạm vi bộ kiến thức mẫu</p>
+        </div>
+      </section>
+
+      <!-- MÀN HÌNH QUẢN TRỊ -->
+      <section class="view admin-view" id="view-admin" aria-label="Quản trị lịch hẹn" hidden>
+        <div class="admin-wrap">
+          <div class="admin-head">
+            <h1>Quản trị lịch hẹn</h1>
+            <p>Không cần đăng nhập (theo yêu cầu đề bài, chỉ dùng cho demo). <span id="adm-storage-note"></span></p>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><b id="st-total">0</b><span>Tổng lịch hẹn</span></div>
+            <div class="stat stat-pending"><b id="st-pending">0</b><span>Chờ xử lý</span></div>
+            <div class="stat"><b id="st-today">0</b><span>Hẹn hôm nay</span></div>
+            <div class="stat stat-warn"><b id="st-unanswered">0</b><span>Câu bot chưa trả lời</span></div>
+          </div>
+
+          <div class="toolbar">
+            <label class="sr-only" for="adm-search">Tìm lịch hẹn</label>
+            <input type="search" id="adm-search" class="search" placeholder="Tìm theo tên, số điện thoại, nội dung…">
+            <div class="seg" role="group" aria-label="Lọc theo trạng thái">
+              <button type="button" data-filter="all" aria-pressed="true">Tất cả</button>
+              <button type="button" data-filter="pending" aria-pressed="false">Chờ xử lý</button>
+              <button type="button" data-filter="done" aria-pressed="false">Đã xử lý</button>
+            </div>
+          </div>
+          <div class="toolbar toolbar-2">
+            <button type="button" class="btn danger-ghost" id="adm-clear-done">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Xóa lịch đã xử lý (<span id="adm-clear-done-count">0</span>)</span>
+            </button>
+            <button type="button" class="btn ghost" id="adm-export">Xuất CSV</button>
+            <button type="button" class="btn ghost" id="adm-seed">Thêm dữ liệu mẫu</button>
+          </div>
+
+          <div class="appt-list" id="adm-list" aria-live="polite"></div>
+
+          <section class="panel" id="adm-log-panel" aria-labelledby="adm-log-title">
+            <h2 id="adm-log-title">Câu hỏi khách hỏi mà bot chưa trả lời được (<span id="adm-unanswered-count">0</span>)</h2>
+            <p class="muted">Dùng để chủ doanh nghiệp bổ sung câu hỏi mới vào bộ kiến thức. Hiển thị 20 câu gần nhất.</p>
+            <ul class="unanswered-list" id="adm-unanswered"></ul>
+            <button type="button" class="btn ghost small" id="adm-clear-log">Xóa nhật ký</button>
+          </section>
+
+          <p class="danger-zone"><button type="button" class="link-btn danger-link" id="adm-reset">Đặt lại toàn bộ dữ liệu demo</button></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- FORM ĐẶT LỊCH -->
+  <dialog id="booking-dialog" aria-labelledby="bk-title">
+    <form id="booking-form" class="dlg-form" novalidate>
+      <div class="dlg-head">
+        <h2 id="bk-title">Đặt lịch tư vấn</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Đóng">✕</button>
+      </div>
+      <p class="dlg-sub">Nhân viên <span data-brand>VibeHost</span> gọi lại đúng giờ hẹn · Thứ 2 – Thứ 7, 08:00–11:30 &amp; 13:30–17:00 (giờ Việt Nam).</p>
+
+      <div class="field">
+        <label for="bk-name">Họ và tên <span class="req" aria-hidden="true">*</span></label>
+        <input id="bk-name" name="name" type="text" maxlength="50" autocomplete="name" placeholder="VD: Nguyễn Thị Lan" aria-describedby="err-name" aria-required="true">
+        <p class="field-error" id="err-name"></p>
+      </div>
+      <div class="field">
+        <label for="bk-phone">Số điện thoại <span class="req" aria-hidden="true">*</span></label>
+        <input id="bk-phone" name="phone" type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="VD: 0912 345 678" aria-describedby="err-phone" aria-required="true">
+        <p class="field-error" id="err-phone"></p>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="bk-date">Ngày hẹn <span class="req" aria-hidden="true">*</span></label>
+          <select id="bk-date" name="date" aria-describedby="err-date" aria-required="true"></select>
+          <p class="field-error" id="err-date"></p>
+        </div>
+        <div class="field">
+          <label for="bk-time">Giờ hẹn <span class="req" aria-hidden="true">*</span></label>
+          <select id="bk-time" name="time" aria-describedby="err-time slot-hint" aria-required="true"></select>
+          <p class="field-error" id="err-time"></p>
+        </div>
+      </div>
+      <p class="slot-hint" id="slot-hint"></p>
+      <div class="field">
+        <label for="bk-note">Nội dung cần tư vấn <span class="opt">(không bắt buộc)</span></label>
+        <textarea id="bk-note" name="note" rows="3" maxlength="200" placeholder="VD: Muốn chuyển website từ nơi khác sang" aria-describedby="err-note"></textarea>
+        <div class="field-foot"><p class="field-error" id="err-note"></p><span class="counter-inline" id="note-count">0/200</span></div>
+      </div>
+      <p class="privacy">Thông tin chỉ lưu trên trình duyệt này (localStorage) để phục vụ bản demo, không gửi đi đâu.</p>
+      <div class="dlg-footer">
+        <p class="form-error" id="err-form" role="alert"></p>
+        <div class="dlg-actions">
+          <button type="button" class="btn ghost" data-close>Hủy</button>
+          <button type="submit" class="btn primary" id="bk-submit">Xác nhận đặt lịch</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- HỘP XÁC NHẬN -->
+  <dialog id="confirm-dialog" class="confirm" aria-labelledby="confirm-msg">
+    <form method="dialog" class="confirm-box">
+      <p id="confirm-msg"></p>
+      <div class="dlg-actions">
+        <button type="submit" value="cancel" class="btn ghost">Hủy</button>
+        <button type="submit" value="ok" class="btn danger" id="confirm-ok">Xóa</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <div class="demo-caption" id="demo-caption" role="status" aria-live="polite" hidden>
+    <span class="cap-step" id="cap-step">1/5</span>
+    <span class="cap-text" id="cap-text"></span>
+    <button type="button" class="cap-stop" id="cap-stop">Dừng</button>
+  </div>
+
+  <noscript><p class="noscript">Vui lòng bật JavaScript để dùng chatbot.</p></noscript>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
