@@ -10,7 +10,7 @@
 | Bảng thi | Bảng B - Kinh tế |
 | Đề bài bốc thăm | Đề số 4 — Chatbot FAQ & đặt lịch tư vấn |
 | Demo online | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/ (hoặc mở `index.html` từ source) |
-| Video demo (≤ 02 phút) | Xem link video trên cổng nộp bài (sẽ cập nhật vào đây) |
+| Video demo (≤ 02 phút) | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html (1 phút 30 giây; file gốc: `media/demo-de4.webm` trên repo) |
 | Source ZIP | https://github.com/khoa-nhd/vibe-coding-2026-de4-chatbot/releases/latest/download/Vibe_De4_ChatbotFAQ_source.zip |
 | Minh chứng dùng AI | Kèm trong ZIP: [`docs/MINH-CHUNG-AI.md`](docs/MINH-CHUNG-AI.md) |
 | Bảng kiểm thử | Kèm trong ZIP: [`docs/KIEM-THU.md`](docs/KIEM-THU.md) và mục 11 bên dưới |
@@ -119,6 +119,8 @@ vibe-de4-chatbot-faq/
 └── README.md
 ```
 
+Trên repo GitHub còn có `video.html` và `media/demo-de4.webm` (video demo). Hai file này không đóng vào Source ZIP cho gọn.
+
 ## 7. Truy cập và phân quyền
 
 - Không yêu cầu đăng nhập; chuyển đổi giữa màn hình người dùng (**Tư vấn**) và màn hình quản trị (**Quản trị**) ngay trên thanh điều hướng.
@@ -171,7 +173,7 @@ Kiểm thử tự động bổ sung: `node tests/run-tests.js` → **278/278** k
 ## 12. Hồ sơ bàn giao
 
 - Source ZIP chứa mã nguồn và README này; không có cấu hình bí mật (không dùng khóa API).
-- Video tối đa 2 phút thể hiện thao tác thực tế và đủ 5 tính năng (quay bằng nút "▶ Demo 5 tính năng" trên giao diện thật).
+- Video 1 phút 30 giây (≤ 2 phút) thể hiện thao tác thực tế và đủ 5 tính năng: quay trực tiếp bản online, nút "▶ Demo 5 tính năng" thao tác lần lượt trên giao diện thật, có khung tiêu đề ở đầu và tóm tắt 5 tính năng ở cuối. Xem tại https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html (video để riêng trên repo/Release, không đóng vào Source ZIP cho gọn).
 - Minh chứng dùng AI và bảng kiểm thử nằm trong ZIP (`docs/`).
 - Dữ liệu demo: không cần tài khoản; bấm "Thêm dữ liệu mẫu" ở trang Quản trị để có sẵn 3 lịch hẹn mẫu (gắn nhãn "Dữ liệu mẫu"); "Đặt lại toàn bộ dữ liệu demo" để xóa sạch.
 - Bản nộp trước hạn là căn cứ chấm; không sửa tính năng sau hạn nộp.
