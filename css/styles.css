@@ -405,7 +405,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 1; pointer-events
 /* ============ THÔNG BÁO, DEMO ============ */
 .toast { position: fixed; left: 50%; bottom: 100px; z-index: 80; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 32px); padding: 11px 16px; border-radius: 12px; font-size: 14.5px; color: #fff; background: #1a2333; border: 1px solid #2c3a50; box-shadow: 0 16px 34px -12px rgba(0, 0, 0, .8); }
 .toast.success { background: #0f3a2c; border-color: #1f6b50; } .toast.warn { background: #3b2c08; border-color: #6b5214; } .toast.error { background: #3d1210; border-color: #7a2a24; }
-.demo-caption { position: fixed; left: 50%; bottom: 96px; z-index: 90; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 24px); padding: 9px 10px 9px 12px; border-radius: 14px; font-size: 14.5px; color: #fff; background: rgba(10, 14, 30, .95); border: 1px solid rgba(154, 166, 255, .35); box-shadow: 0 12px 32px rgba(0, 0, 0, .4); }
+.demo-caption { position: fixed; left: 50%; top: 74px; z-index: 90; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 24px); padding: 9px 10px 9px 12px; border-radius: 14px; font-size: 14.5px; color: #fff; background: rgba(10, 14, 30, .95); border: 1px solid rgba(154, 166, 255, .35); box-shadow: 0 12px 32px rgba(0, 0, 0, .4); }
 .cap-step { flex: none; padding: 2px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #04131c; background: var(--cy-l); font-variant-numeric: tabular-nums; }
 .cap-stop { flex: none; padding: 4px 10px; border-radius: 8px; font-size: 12.5px; color: #fff; border: 1px solid rgba(255, 255, 255, .35); }
 .demo-cursor { position: fixed; left: 0; top: 0; z-index: 95; width: 26px; height: 26px; pointer-events: none; transition: transform .5s cubic-bezier(.25, .8, .3, 1); }
@@ -470,7 +470,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 1; pointer-events
   .tr { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "when st" "who who" "what what" "ac ac"; gap: 8px 12px; }
   .tr .when { grid-area: when; } .tr .who { grid-area: who; } .tr .what { grid-area: what; } .tr .stc { grid-area: st; justify-self: end; } .tr .ac { grid-area: ac; justify-content: flex-start; }
   .tr .ac .btn { flex: 1 1 0; justify-content: center; }
-  .toast, .demo-caption { bottom: 86px; }
+  .toast { bottom: 86px; }
+  .demo-caption { top: 104px; }
 }
 @media (max-width: 380px) {
   .top-brand b { display: none; }
