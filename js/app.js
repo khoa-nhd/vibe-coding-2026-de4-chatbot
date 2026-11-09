@@ -1183,6 +1183,9 @@
       placeOverlays();
       dom.capStep.textContent = step;
       dom.capText.textContent = text;
+      var mr = document.querySelector('.main').getBoundingClientRect(); // canh giữa cột chat, không đè bảng phải
+      dom.cap.style.left = Math.round(mr.left + mr.width / 2) + 'px';
+      dom.cap.style.maxWidth = Math.round(mr.width - 24) + 'px';
       dom.cap.hidden = false;
     }
     function ring(node) {
