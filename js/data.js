@@ -405,6 +405,13 @@
     }
   ];
 
+  /* 3 gói hosting (giá mẫu, khớp FAQ 04) — dùng để vẽ thẻ so sánh trong câu trả lời */
+  VC.PACKAGES = [
+    { id: 'khoi-nghiep', name: 'Khởi Nghiệp', price: '39.000đ', spec: '2 GB SSD, 1 website, 3 email', fit: 'Shop mới, dưới 10.000 lượt/tháng' },
+    { id: 'kinh-doanh', name: 'Kinh Doanh', price: '79.000đ', spec: '6 GB NVMe, 3 website, 10 email', fit: 'Shop đông khách, chạy quảng cáo' },
+    { id: 'doanh-nghiep', name: 'Doanh Nghiệp', price: '159.000đ', spec: '20 GB NVMe, 10 website, 30 email', fit: 'Nhiều website, lượt truy cập lớn' }
+  ];
+
   /* Thứ tự "phổ biến" dùng khi cần lấp đủ 3 gợi ý */
   VC.POPULAR = [
     'vn-hay-com', 'chon-goi-hosting', 'ssl-mien-phi', 'tro-ten-mien', 'email-ten-mien',
