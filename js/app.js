@@ -327,8 +327,7 @@
     return el('div', { class: 'pk', role: 'list', 'aria-label': 'Ba gói hosting (giá mẫu)' }, (VC.PACKAGES || []).map(function (p) {
       var isBest = p.id === best;
       return el('div', { class: 'pc spot' + (isBest ? ' best' : ''), role: 'listitem' }, [
-        isBest ? el('span', { class: 'badge', text: badge }) : null,
-        el('small', { text: 'Gói ' + p.name }),
+        el('div', { class: 'pc-h' }, [el('small', { text: 'Gói ' + p.name }), isBest ? el('span', { class: 'badge', text: badge }) : null]),
         el('b', null, [p.price, el('span', { text: '/tháng' })]),
         el('p', { text: p.spec }),
         el('p', { text: p.fit })
