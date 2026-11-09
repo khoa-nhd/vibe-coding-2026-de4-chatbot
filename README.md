@@ -1,8 +1,8 @@
 # VibeHost Chatbot — Chatbot FAQ & đặt lịch tư vấn — Cuộc thi Vibe Coding 2026
 
-> **Bản demo vòng loại - Dữ liệu mô phỏng AI.** "VibeHost" là doanh nghiệp giả định. Toàn bộ câu hỏi, giá, thông số gói và chính sách trong sản phẩm là **dữ liệu mẫu do đội tự xây dựng**, không phải thông tin của nhà tài trợ hay của công ty có thật nào. Phiên bản 1.2 — 08/11/2026.
+> **Bản demo vòng loại - Dữ liệu mô phỏng AI.** "VibeHost" là doanh nghiệp giả định. Toàn bộ câu hỏi, giá, thông số gói và chính sách trong sản phẩm là **dữ liệu mẫu do đội tự xây dựng**, không phải thông tin của nhà tài trợ hay của công ty có thật nào. Phiên bản 2.0 — 09/11/2026.
 
-**Dùng thử trong 60 giây:** mở https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/ → hỏi *"nên chọn .vn hay .com"* → bấm một câu gợi ý → hỏi *"ten mien .com gia bao nhieu"* (không dấu) → hỏi *"có nhận thiết kế logo không"* → bấm **Đặt lịch tư vấn** → sang tab **Quản trị**. Hoặc bấm **Giới thiệu → Chạy demo tự động 5 tính năng**.
+**Dùng thử trong 60 giây:** mở https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/ → rê chuột vào một câu ở bảng **Câu hỏi thường gặp** bên phải (bong bóng xem trước câu trả lời) rồi bấm câu đó → hỏi *"ten mien .com gia bao nhieu"* (không dấu) → bấm một câu gợi ý → hỏi *"có nhận thiết kế logo không"* → bấm **Đặt lịch tư vấn** (bảng phải chuyển sang form đặt lịch) → sang tab **Quản trị**. Hoặc bấm nút ▶ trên thanh trên cùng / **Giới thiệu → Chạy demo tự động 5 tính năng**.
 
 ## 1. Thông tin chung
 
@@ -12,7 +12,7 @@
 | Bảng thi | Bảng B - Kinh tế |
 | Đề bài bốc thăm | Đề số 4 — Chatbot FAQ & đặt lịch tư vấn |
 | Demo online | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/ (hoặc mở `index.html` từ source) |
-| Video demo (≤ 02 phút) | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html (1 phút 32 giây) |
+| Video demo (≤ 02 phút) | https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html (1 phút 41 giây) |
 | Source ZIP | https://github.com/khoa-nhd/vibe-coding-2026-de4-chatbot/releases/latest/download/Vibe_De4_ChatbotFAQ_source.zip |
 | Minh chứng dùng AI | Kèm trong ZIP: [`docs/MINH-CHUNG-AI.md`](docs/MINH-CHUNG-AI.md) |
 | Bảng kiểm thử | Kèm trong ZIP: [`docs/KIEM-THU.md`](docs/KIEM-THU.md) và mục 11 bên dưới |
@@ -34,27 +34,32 @@ Lợi ích: không bỏ lỡ khách ngoài giờ, nhân viên không phải tr�
 
 ## 2. Tính năng chính
 
-- **Tính năng 1 — Khung chat trả lời 10 câu hỏi thường gặp** từ bộ kiến thức có sẵn (`js/data.js`). Hiểu cả câu **gõ không dấu** ("ssl co mien phi khong"), **gõ sai nhẹ** ("domian", "hostng", "bakup") và nhiều cách hỏi khác nhau. Trên máy tính có cột 10 chủ đề; ở mọi màn hình có lệnh "Xem 10 câu hỏi". Cuộc trò chuyện được giữ lại khi tải lại trang (trong phiên).
+- **Tính năng 1 — Khung chat trả lời 10 câu hỏi thường gặp** từ bộ kiến thức có sẵn (`js/data.js`). Hiểu cả câu **gõ không dấu** ("ssl co mien phi khong"), **gõ sai nhẹ** ("domian", "hostng", "bakup") và nhiều cách hỏi khác nhau.
+  - Bố cục 3 cột trên máy tính: **lịch sử trò chuyện** bên trái, khung chat ở giữa, bảng **Câu hỏi thường gặp / Đặt lịch tư vấn** bên phải (bật tắt bằng 2 tab, ẩn/hiện được).
+  - Rê chuột vào một câu hỏi ở bảng phải → **bong bóng xem trước** câu trả lời; bấm để hỏi ngay. Có ô tìm câu hỏi.
+  - **Nhiều cuộc trò chuyện**: bấm "Cuộc trò chuyện mới", mở lại cuộc cũ, tìm trong lịch sử; lưu trên trình duyệt (tối đa 20 cuộc), tải lại trang vẫn còn. Cuộc nào đã đặt lịch có nhãn "Đã đặt lịch".
+  - Màn chào có linh vật trợ lý: **đôi mắt nhìn theo con trỏ chuột** (và nhìn xuống ô nhập khi đang gõ), kèm 3 câu gợi ý.
 - **Tính năng 2 — AI diễn đạt lại câu trả lời + gợi ý 03 câu hỏi liên quan sau mỗi lượt** (AI mô phỏng – mock):
   - **Bám ý hỏi:** nếu câu hỏi nhắc tới một ý cụ thể (giá, rẻ nhất, hết hạn, hoàn tiền, đã trỏ mà chưa vào được…), câu đầu trả lời thẳng ý đó.
   - Phần còn lại được viết lại theo giọng tư vấn, cá nhân hóa theo ngữ cảnh khách nhắc tới ("shop của bạn", "website doanh nghiệp của bạn"). Hỏi lại cùng chủ đề thì dùng cách diễn đạt khác.
-  - Mỗi câu trả lời có nhãn **"Nguồn: FAQ … · AI mô phỏng"** và nút **"Xem câu trả lời gốc"** cho thấy câu gốc, từ khóa đã khớp và điểm.
+  - Mỗi câu trả lời mở đầu bằng dòng **"Đã tìm trong bộ kiến thức · FAQ 04 · khớp …"** (hoặc "Bạn chọn câu có sẵn"), cuối có nhãn **"Nguồn: FAQ … · AI mô phỏng"** và nút **"Xem câu trả lời gốc"** cho thấy câu gốc, từ khóa đã khớp và điểm.
+  - Câu hỏi về bảng giá hosting hiện **3 thẻ gói**; thẻ được gợi ý đổi theo ý hỏi ("nhiều website" → Doanh Nghiệp, "đông khách" → Kinh Doanh, còn lại → Khởi Nghiệp).
 - **Tính năng 3 — Không trả lời được → chủ động đề xuất đặt lịch:**
   - Khi độ khớp thấp hơn ngưỡng, hoặc câu hỏi có dấu hiệu ngoài phạm vi, bot xin lỗi và không bịa câu trả lời.
-  - Bot hiện nút **Đặt lịch tư vấn**; form tự điền sẵn câu hỏi của khách. Câu đó được ghi vào nhật ký cho quản trị.
+  - Câu trả lời nằm trong khung **"Ngoài bộ kiến thức"** kèm nút **Đặt lịch tư vấn**; bấm nút thì bảng phải chuyển sang form đặt lịch, ô nội dung điền sẵn câu hỏi của khách. Câu đó được ghi vào nhật ký cho quản trị.
   - Hỏi ngoài phạm vi 2 lần liên tiếp → bot nhấn mạnh gặp chuyên viên. Khách nói "muốn gặp nhân viên / đặt lịch" → form mở ngay.
 - **Tính năng 4 — Form đặt lịch:**
-  - Chọn ngày từ hôm nay đến 14 ngày tới (Chủ nhật nghỉ), và khung giờ 30 phút trong giờ làm việc theo giờ Việt Nam.
+  - Nằm ngay ở bảng bên phải (trên điện thoại: tấm trượt từ dưới lên). Chọn ngày bằng **15 ô ngày** từ hôm nay đến 14 ngày tới (Chủ nhật nghỉ, bị gạch và khóa), chọn giờ ở **lưới 14 khung 30 phút** theo giờ Việt Nam (giờ đã qua / đã có người đặt bị gạch). Dòng tóm tắt "Thứ Hai, 09/11/2026 lúc 11:00" trước khi gửi. Chọn được bằng phím mũi tên.
   - Nhập tên + số điện thoại, có kiểm tra dữ liệu.
   - Chặn giờ đã qua, chặn trùng khung giờ, chặn một số điện thoại đặt 2 lịch đang chờ trong cùng ngày.
   - Lưu danh sách lịch hẹn vào **localStorage** rồi đọc lại để xác nhận. Thẻ xác nhận nói đúng trạng thái: *"Đã ghi nhận · Chờ nhân viên gọi lại"*, có mã lịch hẹn.
-  - Khách xem lại và **tự hủy** lịch đang chờ trong **"Lịch hẹn của bạn"**; lịch đã hủy trả lại khung giờ.
+  - Khách xem lại và **tự hủy** lịch đang chờ trong **"Lịch hẹn của bạn"** (ngay dưới form, hoặc nút "Lịch của bạn" ở thanh trái); lịch đã hủy trả lại khung giờ.
 - **Tính năng 5 — Trang quản trị đơn giản** (không cần đăng nhập):
-  - Xem danh sách lịch hẹn sắp theo ngày giờ (thời gian · khách hàng · nội dung · trạng thái), kèm thống kê, tìm kiếm và lọc.
+  - Dải 4 chỉ số trên cùng (câu hỏi đã nhận, % bot tự trả lời, số câu chuyển nhân viên, lịch chờ xử lý). Bảng lịch hẹn sắp theo ngày giờ (thời gian · khách hàng · nội dung · trạng thái), tìm kiếm và lọc.
   - **Đánh dấu Đã xử lý** và **xóa lịch đã xử lý** (từng lịch hoặc tất cả, có hộp xác nhận).
   - Phần **Hiệu quả chatbot** (số câu hỏi, % bot tự trả lời, số câu chuyển nhân viên, số lịch hẹn từ chatbot, 5 chủ đề hỏi nhiều nhất) và danh sách câu bot chưa trả lời được.
   - Xuất CSV; nút "Thêm dữ liệu mẫu" (gắn nhãn *Dữ liệu mẫu*).
-- **Tiện ích cho giám khảo:** nút **Giới thiệu** (người dùng, tình huống, 3 loại dữ liệu) và **Demo tự động 5 tính năng** — tự thao tác trên chính giao diện thật trong khoảng 80 giây, có con trỏ minh họa và chú thích 1/5 … 5/5.
+- **Tiện ích cho giám khảo:** nút **Giới thiệu** (người dùng, tình huống, 3 loại dữ liệu) và **Demo tự động 5 tính năng** — tự thao tác trên chính giao diện thật trong khoảng 90 giây, có con trỏ minh họa và chú thích 1/5 … 5/5.
 
 ### Bộ 10 câu hỏi mẫu (bộ kiến thức — dữ liệu mẫu, chủ đề hosting/domain theo gợi ý BTC)
 
@@ -87,9 +92,9 @@ Ngoài 10 câu trên, bot nhận biết một số ý định hội thoại cơ 
 
 | Lớp | Công nghệ (ghi đúng thứ đã dùng) |
 |---|---|
-| Giao diện | HTML/CSS/JS thuần (không framework), CSS tự viết, mobile-first (thử ở 320, 390 và 1366px) |
-| Thư viện | Không dùng thư viện hay CDN bên ngoài (icon là SVG tự vẽ) → chạy được offline |
-| Lưu trữ | localStorage (lịch hẹn, nhật ký, số liệu) + sessionStorage (cuộc trò chuyện của phiên) — phía trình duyệt, không có backend |
+| Giao diện | HTML/CSS/JS thuần (không framework), CSS tự viết; 3 cột trên máy tính, ngăn kéo + tấm trượt trên điện thoại (thử ở 320, 390, 768, 1024, 1280, 1366, 1440, 1536 và 1920px) |
+| Thư viện | Không dùng thư viện hay CDN bên ngoài. Phông chữ Inter (giấy phép SIL OFL) lưu sẵn trong `css/fonts/`; icon và linh vật là SVG tự vẽ → chạy được offline |
+| Lưu trữ | localStorage (lịch hẹn, nhật ký, số liệu, lịch sử trò chuyện) — phía trình duyệt, không có backend |
 | Triển khai | GitHub Pages (tĩnh); hoặc mở trực tiếp `index.html` từ source |
 | Kiểm thử | `node tests/run-tests.js` (Node.js ≥ 18, không cần cài gói) + kiểm thử giao diện trên trình duyệt Edge |
 
@@ -124,13 +129,16 @@ Yêu cầu: trình duyệt hiện đại (Chrome, Edge, Firefox, Safari bản m�
 
 ```text
 vibe-de4-chatbot-faq/
-├── index.html            # 2 màn hình: Tư vấn (#/chat) và Quản trị (#/admin) + hộp thoại đặt lịch, lịch hẹn của bạn, giới thiệu
-├── css/styles.css        # giao diện mobile-first
+├── index.html            # 2 màn hình: Tư vấn (#/chat: lịch sử · chat · bảng FAQ/đặt lịch) và Quản trị (#/admin) + hộp giới thiệu
+├── css/
+│   ├── styles.css        # giao diện (3 cột trên máy tính, ngăn kéo/tấm trượt trên điện thoại)
+│   └── fonts/            # phông Inter (SIL OFL), lưu sẵn để chạy offline
+├── assets/mascot.svg     # linh vật trợ lý (tự vẽ)
 ├── js/
 │   ├── data.js           # bộ kiến thức 10 FAQ (+ câu trả lời trọng tâm) + dữ liệu mẫu doanh nghiệp VibeHost giả định
 │   ├── engine.js         # chuẩn hóa tiếng Việt, so khớp, AI mô phỏng (bám ý hỏi, diễn đạt, 3 gợi ý)
 │   ├── booking.js        # khung giờ (giờ VN), kiểm tra form, lưu lịch hẹn, hủy lịch, số liệu hiệu quả, CSV
-│   └── app.js            # khung chat, form đặt lịch, lịch hẹn của bạn, trang quản trị, demo tự động
+│   └── app.js            # khung chat, lịch sử nhiều cuộc trò chuyện, bảng FAQ/đặt lịch, quản trị, hiệu ứng, demo tự động
 ├── tests/run-tests.js    # 341 kiểm tra logic, chạy bằng Node, không cần cài gói
 ├── docs/
 │   ├── KIEM-THU.md       # bảng kiểm thử (14 ca) + kết quả thực tế
@@ -155,7 +163,7 @@ Trên repo GitHub còn có `video.html` và `media/demo-de4.webm` (video demo). 
 
 - Dữ liệu chỉ lưu trên trình duyệt hiện tại; xoá dữ liệu trình duyệt hoặc đổi thiết bị sẽ mất dữ liệu.
 - Nhân viên và khách không dùng chung một danh sách thật (bản demo dùng chung localStorage của một trình duyệt); cần backend nếu triển khai thật.
-- Cuộc trò chuyện chỉ giữ trong phiên (đóng tab là mất). Số liệu "Hiệu quả chatbot" chỉ đếm trên trình duyệt đang dùng.
+- Lịch sử trò chuyện lưu tối đa 20 cuộc (mỗi cuộc 60 tin gần nhất) trên trình duyệt đang dùng. Số liệu "Hiệu quả chatbot" chỉ đếm trên trình duyệt đang dùng.
 - Không có xác thực, nên màn hình quản trị không bảo mật (đúng phạm vi đề bài cho vòng loại).
 - Tính năng AI ở mức demo (Mock):
   - Bot chỉ hiểu các câu gần với 10 chủ đề và các ý con đã soạn; câu hỏi khác sẽ được chuyển sang đặt lịch.
@@ -169,12 +177,13 @@ Trên repo GitHub còn có `video.html` và `media/demo-de4.webm` (video demo). 
 - Nghị định 147/2024/NĐ-CP về quản lý, cung cấp, sử dụng dịch vụ Internet và thông tin trên mạng (hiệu lực 25/12/2024) — phần đăng ký tên miền ".vn".
 - Trung tâm Internet Việt Nam (VNNIC) — quản lý tên miền quốc gia ".vn".
 - ICANN Transfer Policy — quy định khóa chuyển tên miền 60 ngày sau đăng ký/chuyển (đang áp dụng).
-- Let’s Encrypt — chứng chỉ SSL/TLS miễn phí; MDN Web Docs — `localStorage`, `sessionStorage`, `<dialog>`; W3C WAI — gắn nhãn cho ô nhập liệu.
-- Không dùng thư viện, template hay hình ảnh bên ngoài.
+- Let’s Encrypt — chứng chỉ SSL/TLS miễn phí; MDN Web Docs — `localStorage`, `<dialog>`, `elementsFromPoint`; W3C WAI-ARIA — mẫu tab và nhóm lựa chọn (radiogroup).
+- Phông chữ **Inter** (Rasmus Andersson, giấy phép SIL Open Font License 1.1), tải từ Google Fonts và lưu kèm trong `css/fonts/`.
+- Bố cục giao diện tham khảo ý tưởng từ một số thiết kế chatbot trên Dribbble (chỉ tham khảo bố cục, không sao chép hình ảnh). Linh vật, icon và toàn bộ CSS do đội tự làm. Không dùng thư viện hay template bên ngoài.
 
 ## 10. Minh chứng dùng AI để xây dựng sản phẩm
 
-- **Chi tiết:** [`docs/MINH-CHUNG-AI.md`](docs/MINH-CHUNG-AI.md) — 1 trang, 3 đoạn hội thoại và 2 ảnh trước/sau.
+- **Chi tiết:** [`docs/MINH-CHUNG-AI.md`](docs/MINH-CHUNG-AI.md) — 1 trang, các đoạn hội thoại chọn lọc và 3 ảnh trước/sau.
 - **Công cụ:** **Claude Code** (trợ lý lập trình AI).
 - **Phân vai:** đội giao yêu cầu và chốt quyết định (dùng mock minh bạch, doanh nghiệp giả định, deploy GitHub Pages, rà soát lại toàn bộ theo bảng tiêu chí). AI đọc đề, viết mã, tự chạy thử bằng dữ liệu kiểu khách thật, phát hiện lỗi và sửa. Đội duyệt kết quả.
 
@@ -182,13 +191,14 @@ Trên repo GitHub còn có `video.html` và `media/demo-de4.webm` (video demo). 
 1. Thử 40 câu hỏi kiểu khách thật → phát hiện bot trả lời **sai chủ đề**. Ví dụ: "hoàn tiền mất bao lâu" bị trả lời bằng FAQ "trỏ tên miền", vì cụm "mất bao lâu" được điểm quá cao.
 2. Sửa trọng số → lượt rà soát sau phát hiện thêm vấn đề: mock trả lời **chung chung** cho mọi câu cùng chủ đề (hỏi giá vẫn nhận cả đoạn so sánh).
 3. Thêm "câu trả lời trọng tâm" theo ý hỏi, kèm kiểm tra hồi quy cho mọi câu từng sai → toàn bộ kiểm thử đạt.
+4. Đội nhận xét giao diện v1 "chung chung, không nổi bật" → AI tìm ảnh tham khảo, vẽ nhiều bản phác thảo để đội chọn, rồi code lại giao diện v2. Khi soát, đội phát hiện nhãn "Hợp shop nhỏ" đè lên tên gói ở màn 1280px → AI viết thêm bộ quét tự động tìm chữ đè nhau / tràn khung ở 5 độ rộng × 10 trạng thái, xác nhận bộ quét bắt được lỗi trên bản cũ, sửa và chạy lại sạch.
 
 ## 11. Bảng kiểm thử
 
-Bảng B yêu cầu ít nhất 3 ca (bình thường, nhập thiếu/sai, ca biên) — đội làm **14 ca**.
+Bảng B yêu cầu ít nhất 3 ca (bình thường, nhập thiếu/sai, ca biên) — đội làm **16 ca**.
 
-- **Ngày thử:** 08/11/2026, phiên bản 1.2.
-- **Môi trường:** trình duyệt Microsoft Edge ở cỡ điện thoại 390×844 và 320×640, cỡ máy tính 1366×900. Thao tác được tự động hóa để lặp lại chính xác.
+- **Ngày thử:** 09/11/2026, phiên bản 2.0.
+- **Môi trường:** trình duyệt Microsoft Edge ở cỡ điện thoại 320×640, 390×844, máy tính bảng 768×1024 và máy tính 1024 → 1920px. Thao tác được tự động hóa để lặp lại chính xác.
 - **Kiểm thử logic:** `node tests/run-tests.js`.
 - **Chi tiết** (có thêm điều kiện ban đầu và kiểm tra lại sau sửa): [`docs/KIEM-THU.md`](docs/KIEM-THU.md).
 
@@ -197,26 +207,28 @@ Bảng B yêu cầu ít nhất 3 ca (bình thường, nhập thiếu/sai, ca bi�
 | TC01 | Bình thường | Hỏi "Nên chọn tên miền .vn hay .com cho shop online?" | Trả lời FAQ 02, diễn đạt tự nhiên, có 3 gợi ý | Trả lời FAQ 02 có nhãn "AI mô phỏng", câu gốc, 3 gợi ý; dùng "shop của bạn" | Đạt |
 | TC02 | Bình thường (không dấu/gõ sai) | "ssl co mien phi khong", "domian la gi" | Hiểu đúng FAQ 05 và FAQ 01 | Trả lời đúng FAQ 05 và FAQ 01 (tự sửa domian → domain) | Đạt |
 | TC03 | Bình thường | Bấm 1 câu gợi ý dưới câu trả lời | Trả lời câu đó + 3 gợi ý mới, không trùng câu vừa hỏi | Trả lời đúng, 3 gợi ý mới; 10 FAQ đều đủ 3 gợi ý | Đạt |
-| TC04 | Ngoài phạm vi | "Bên bạn có nhận thiết kế logo cho shop không?" | Không bịa câu trả lời; mời đặt lịch; ghi nhật ký | Nhãn "Ngoài bộ kiến thức" + nút Đặt lịch; form điền sẵn câu hỏi; nhật ký quản trị có câu này | Đạt |
+| TC04 | Ngoài phạm vi | "Bên bạn có nhận thiết kế logo cho shop không?" | Không bịa câu trả lời; mời đặt lịch; ghi nhật ký | Khung "Ngoài bộ kiến thức" + nút Đặt lịch; bấm → bảng phải chuyển sang form, điền sẵn câu hỏi; nhật ký quản trị có câu này | Đạt |
 | TC05 | Nhập sai/ca biên | Gửi tin chỉ có khoảng trắng; dán tin 400 ký tự | Không gửi tin rỗng; tin dài rút còn 300 ký tự | Không gửi + nhắc "Bạn chưa nhập câu hỏi nào"; tin dài rút còn 300 ký tự + thông báo | Đạt |
-| TC06 | Nhập thiếu | Mở form đặt lịch, bấm "Xác nhận" khi chưa nhập | Báo lỗi từng ô, không lưu | Báo lỗi tên, SĐT, giờ ngay dưới ô; nút xác nhận vẫn nhìn thấy trên điện thoại; localStorage vẫn trống | Đạt |
+| TC06 | Nhập thiếu | Mở form đặt lịch, bấm "Xác nhận" khi chưa nhập | Báo lỗi từng ô, không lưu | Báo lỗi tên, SĐT, giờ ngay dưới ô (viền đỏ), con trỏ nhảy về ô Họ tên; nút xác nhận bấm được trên điện thoại; localStorage vẫn trống | Đạt |
 | TC07 | Nhập sai | Tên "Lan123", SĐT "12345" | Báo lỗi định dạng | "Họ tên chỉ gồm chữ cái…", "Số điện thoại chưa đúng định dạng…" | Đạt |
-| TC08 | Ca biên (ngày) | Chọn Chủ nhật; ép chọn ngày hôm qua / 20 ngày tới bằng script | Không cho chọn; nếu ép vẫn bị chặn | Danh sách ngày chỉ có 15 ngày, Chủ nhật ghi "nghỉ" và bị khóa; ép chọn → báo lỗi tương ứng | Đạt |
+| TC08 | Ca biên (ngày) | Bấm ô Chủ nhật; gửi ngày hôm qua / 20 ngày tới thẳng vào hàm lưu | Không cho chọn; nếu ép vẫn bị chặn | Chỉ có 15 ô ngày, Chủ nhật bị gạch, khóa, ghi "nghỉ"; gửi ép → "Không thể đặt lịch cho ngày đã qua.", "Chỉ nhận lịch trong vòng 14 ngày tới." | Đạt |
 | TC09 | Ca biên (giờ) | Hôm nay lúc 09:10, chọn khung 09:00/09:30 | Khung đã qua bị khóa (cần đặt trước 30 phút) | 08:00–09:30 bị khóa "đã qua", 10:00 còn trống (kiểm tra logic) | Đạt |
-| TC10 | Ca biên (trùng lịch) | Đặt lịch khung đã có người đặt (ép chọn bằng script) | Khung hiện "đã có lịch"; lưu bị chặn | Khung bị khóa "đã có lịch"; ép chọn → lỗi "đã có khách đặt", vẫn chỉ 1 lịch | Đạt |
-| TC11 | Bình thường (quản trị) | Đặt lịch đúng → tải lại trang → Quản trị → Đã xử lý → Xóa | Lịch còn sau khi tải lại; xử lý & xóa đúng | Lịch còn sau tải lại (cuộc trò chuyện cũng còn); trạng thái "Đã xử lý"; hộp xác nhận → xóa khỏi localStorage | Đạt |
-| TC12 | Sự cố dữ liệu | Ghi chuỗi hỏng vào localStorage rồi mở lại | Không treo; báo lỗi; sao lưu bản lỗi | App chạy bình thường, thông báo "lỗi định dạng… đã khởi tạo lại", có bản sao lưu | Đạt |
+| TC10 | Ca biên (trùng lịch) | Đặt 1 lịch, rồi xem lại lưới giờ; gửi ép đúng khung đó | Khung vừa đặt bị khóa; lưu trùng bị chặn | Khung bị gạch, khóa ngay ("đã có người đặt"); gửi ép → "Khung giờ này đã có khách đặt…", vẫn chỉ 1 lịch | Đạt |
+| TC11 | Bình thường (quản trị) | Đặt lịch đúng → tải lại trang → Quản trị → Đã xử lý → Xóa | Lịch còn sau khi tải lại; xử lý & xóa đúng | Lịch và lịch sử trò chuyện còn sau tải lại; trạng thái "Đã xử lý"; hộp xác nhận → xóa khỏi localStorage | Đạt |
+| TC12 | Sự cố dữ liệu | Ghi chuỗi hỏng vào localStorage (lịch hẹn và lịch sử trò chuyện) rồi mở lại | Không treo; báo lỗi; sao lưu bản lỗi | App chạy bình thường, thông báo "lỗi định dạng… đã khởi tạo lại", có bản sao lưu; lịch sử trò chuyện tự khởi tạo lại | Đạt |
 | TC13 | Bình thường (khách hủy lịch) | Đặt lịch → "Lịch hẹn của bạn" → Hủy lịch hẹn → xác nhận | Trạng thái "Khách đã hủy", khung giờ trống lại, quản trị thấy đúng | Đổi "Khách đã hủy", hết nút hủy, khung giờ trống lại; quản trị hiện "Khách đã hủy"; chat ghi nhận việc hủy | Đạt |
-| TC14 | Độ đúng nội dung (mock phù hợp đầu vào) | Hỏi "ten mien .com gia bao nhieu", "đã trỏ dns mà web vẫn chưa vào được" | Câu đầu trả lời thẳng ý hỏi | "Về chi phí… .com 320.000đ/năm"; "chờ tối đa 24–48 giờ… quá thời gian đó, hãy kiểm tra lại…" | Đạt |
+| TC14 | Độ đúng nội dung (mock phù hợp đầu vào) | Hỏi "ten mien .com gia bao nhieu", "Shop mình có nhiều website thì nên chọn gói hosting nào?" | Câu đầu trả lời thẳng ý hỏi | "Về chi phí… .com 320.000đ/năm"; thẻ gói gợi ý "Doanh Nghiệp" thay vì "Khởi Nghiệp" | Đạt |
+| TC15 | Bình thường (lịch sử trò chuyện) | Hỏi 1 câu → "Cuộc trò chuyện mới" → hỏi câu khác → bấm cuộc cũ ở cột trái → tải lại trang | Có 2 mục lịch sử; mở lại đúng nội dung; tải lại vẫn còn | 2 mục (cuộc đã đặt lịch có nhãn "Đã đặt lịch"); mở lại đủ tin nhắn và thẻ xác nhận; tải lại mở cuộc gần nhất | Đạt |
+| TC16 | Giao diện (nhiều cỡ màn hình) | Quét tự động 5 độ rộng (320 → 1280px) × 10 trạng thái + 7 độ rộng khác | Không tràn ngang, không chữ đè nhau, thanh trên không bị che | Không lỗi; bộ quét được kiểm chứng: chạy trên bản cũ bắt đúng lỗi nhãn gói đè tên gói ở 1280px | Đạt |
 
 **Kiểm thử tự động bổ sung:**
 - `node tests/run-tests.js` → **341/341** kiểm tra đạt: so khớp 70+ cách hỏi, 14 câu hỏi theo ý con, 13 câu ngoài phạm vi, form, lưu trữ, hủy lịch, số liệu, CSV.
-- Kiểm thử giao diện trên Edge → **60/60** kiểm tra đạt: 0 lỗi console, không tràn ngang ở 320 và 390px, demo tự động chạy 81 giây.
+- Kiểm thử giao diện trên Edge → **73/73** kiểm tra đạt: 0 lỗi console, không tràn ngang và không chữ đè ở 320 → 1920px, bàn phím chọn ngày/tab, mắt linh vật nhìn theo con trỏ, demo tự động chạy 90 giây.
 
 ## 12. Hồ sơ bàn giao
 
 - Source ZIP chứa mã nguồn và README này; không có cấu hình bí mật (không dùng khóa API).
-- Video 1 phút 32 giây (≤ 2 phút) thể hiện thao tác thực tế và đủ 5 tính năng:
+- Video 1 phút 41 giây (≤ 2 phút) thể hiện thao tác thực tế và đủ 5 tính năng:
   - Quay trực tiếp bản online; nút "Demo tự động 5 tính năng" thao tác lần lượt trên giao diện thật, có con trỏ minh họa.
   - Có khung tiêu đề ở đầu và tóm tắt 5 tính năng ở cuối.
   - Xem tại https://khoa-nhd.github.io/vibe-coding-2026-de4-chatbot/video.html.
@@ -226,7 +238,8 @@ Bảng B yêu cầu ít nhất 3 ca (bình thường, nhập thiếu/sai, ca bi�
 
 | Màn hình | Điện thoại (390px) | Máy tính |
 |---|---|---|
-| Trả lời FAQ + 3 gợi ý | ![Trả lời FAQ](docs/screenshots/mobile-02-tra-loi-faq.png) | ![Chat trên máy tính](docs/screenshots/desktop-01-chat.png) |
-| Ngoài phạm vi → đặt lịch | ![Ngoài phạm vi](docs/screenshots/mobile-03-ngoai-pham-vi.png) | ![Giới thiệu bản demo](docs/screenshots/desktop-03-gioi-thieu.png) |
-| Xác nhận & quản trị | ![Xác nhận đặt lịch](docs/screenshots/mobile-05-dat-lich-thanh-cong.png) | ![Quản trị trên máy tính](docs/screenshots/desktop-02-quan-tri.png) |
-| Hiệu quả chatbot | ![Hiệu quả chatbot](docs/screenshots/mobile-07-hieu-qua-chatbot.png) | ![Demo tự động](docs/screenshots/desktop-04-demo-tu-dong.png) |
+| Màn chào / bảng câu hỏi | ![Màn chào](docs/screenshots/mobile-01-man-chao.jpg) | ![Bong bóng xem trước](docs/screenshots/desktop-01-bong-bong-xem-truoc.jpg) |
+| Trả lời FAQ + thẻ gói + 3 gợi ý | ![Trả lời](docs/screenshots/mobile-02-tra-loi.jpg) | ![Trả lời có thẻ gói](docs/screenshots/desktop-02-tra-loi-the-goi.jpg) |
+| Đặt lịch | ![Tấm đặt lịch](docs/screenshots/mobile-03-dat-lich.jpg) | ![Đặt lịch thành công](docs/screenshots/desktop-03-dat-lich.jpg) |
+| Xác nhận / lịch sử | ![Xác nhận](docs/screenshots/mobile-04-xac-nhan.jpg) | ![Ngoài phạm vi](docs/screenshots/desktop-04-ngoai-pham-vi.jpg) |
+| Quản trị | ![Quản trị điện thoại](docs/screenshots/mobile-05-quan-tri.jpg) | ![Quản trị máy tính](docs/screenshots/desktop-05-quan-tri.jpg) |
